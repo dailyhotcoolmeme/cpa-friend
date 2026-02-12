@@ -1,84 +1,72 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Save, List } from 'lucide-react';
+import { Lock, List, Save } from 'lucide-react';
 
 export default function AdminHome() {
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [inputPw, setInputPw] = useState('');
   const [menus, setMenus] = useState([]);
 
-  // useEffect 안에서 모든 비동기 처리를 완료하는 구조로 변경
-  useEffect(() => {
-    async function loadInitialData() {
-      const { data, error } = await supabase
-        .from('site_menu')
-        .select('*')
-        .order('sort_order', { ascending: true });
-      
-      if (!error && data) {
-        setMenus(data);
-      }
-    }
-    
-    loadInitialData();
-  }, []); // 처음에 한 번만 실행
-
-  // 메뉴 이름 수정 기능 (상태 최적화)
-  async function updateMenuName(id, newName) {
-    if (!newName) return;
-    
-    // 1. 서버 업데이트
-    const { error } = await supabase
-      .from('site_menu')
-      .update({ name: newName })
-      .eq('id', id);
-    
-    if (error) {
-      alert('수정 실패: ' + error.message);
+  // 비번 체크 함수
+  async function checkPassword() {
+    const { data } = await supabase.from('admin_config').select('value').eq('key', 'admin_password').single();
+    if (data && data.value === inputPw) {
+      setIsAuthorized(true);
+      loadMenus();
     } else {
-      // 2. 서버 통신 성공 시에만 로컬 상태 반영 (전체 리렌더링 방지)
-      setMenus(prev => prev.map(m => m.id === id ? { ...m, name: newName } : m));
+      alert('비밀번호가 틀렸습니다.');
     }
   }
 
+  async function loadMenus() {
+    const { data } = await supabase.from('site_menu').select('*').order('sort_order', { ascending: true });
+    if (data) setMenus(data);
+  }
+
+  async function updateMenuName(id, newName) {
+    const { error } = await supabase.from('site_menu').update({ name: newName }).eq('id', id);
+    if (!error) setMenus(prev => prev.map(m => m.id === id ? { ...m, name: newName } : m));
+  }
+
+  // 로그인 전 화면
+  if (!isAuthorized) {
+    return (
+      <div style={{ height: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
+        <Lock size={48} color="#1e40af" />
+        <h2 style={{ margin: 0 }}>관리자 인증</h2>
+        <input 
+          type="password" 
+          placeholder="비밀번호 입력" 
+          value={inputPw}
+          onChange={(e) => setInputPw(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && checkPassword()}
+          style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd', width: '200px', textAlign: 'center' }}
+        />
+        <button onClick={checkPassword} style={{ padding: '10px 30px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>
+          접속하기
+        </button>
+      </div>
+    );
+  }
+
+  // 로그인 후 관리 화면
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
-        <List size={28} color="#2563eb" />
-        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', margin: 0 }}>메뉴 구성 관리</h2>
+        <List size={24} color="#1e40af" />
+        <h2 style={{ margin: 0 }}>메뉴 관리</h2>
       </div>
-
-      <div style={{ display: 'grid', gap: '15px' }}>
-        {menus.map((menu) => (
-          <div key={menu.id} style={{ 
-            backgroundColor: 'white', padding: '20px', borderRadius: '12px', 
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', 
-            alignItems: 'center', gap: '15px', border: '1px solid #e2e8f0' 
-          }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', marginBottom: '5px' }}>
-                메뉴 이름
-              </label>
-              <input 
-                type="text" 
-                defaultValue={menu.name} 
-                onBlur={(e) => updateMenuName(menu.id, e.target.value)}
-                style={{ 
-                  padding: '8px 12px', width: '100%', borderRadius: '6px', 
-                  border: '1px solid #cbd5e1', fontSize: '1rem' 
-                }}
-              />
-            </div>
-            <div style={{ textAlign: 'right', minWidth: '80px' }}>
-              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>순서: {menu.sort_order}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#eff6ff', borderRadius: '12px', color: '#1e40af' }}>
-        <p style={{ margin: 0, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Save size={16} /> 메뉴 이름을 바꾸고 입력창 바깥을 누르면 즉시 홈페이지에 반영됩니다.
-        </p>
-      </div>
+      {menus.map(menu => (
+        <div key={menu.id} style={{ marginBottom: '15px', padding: '15px', border: '1px solid #eee', borderRadius: '10px' }}>
+          <input 
+            type="text" 
+            defaultValue={menu.name} 
+            onBlur={(e) => updateMenuName(menu.id, e.target.value)}
+            style={{ width: '100%', padding: '8px', border: 'none', borderBottom: '1px solid #ddd', fontSize: '1rem' }}
+          />
+        </div>
+      ))}
+      <p style={{ color: '#666', fontSize: '0.8rem' }}><Save size={12} /> 입력 후 칸 밖을 클릭하면 저장됩니다.</p>
     </div>
   );
 }
