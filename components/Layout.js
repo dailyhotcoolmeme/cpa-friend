@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Shield, Menu, User, BookOpen, MapPin, MessageSquare, LayoutDashboard } from 'lucide-react';
+import { Shield, LayoutDashboard } from 'lucide-react';
 
 export default function Layout({ children }) {
   const [menus, setMenus] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchMenus() {
@@ -18,80 +20,54 @@ export default function Layout({ children }) {
     fetchMenus();
   }, []);
 
-  const getIcon = (name) => {
-    if (name.includes('회사')) return <Shield size={16} />;
-    if (name.includes('회계사')) return <User size={16} />;
-    if (name.includes('정보')) return <BookOpen size={16} />;
-    if (name.includes('길')) return <MapPin size={16} />;
-    if (name.includes('게시판')) return <MessageSquare size={16} />;
-    return <Menu size={16} />;
-  };
-
   return (
-    <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      {/* GNB: 상단바 */}
-      <nav style={{ 
-        backgroundColor: '#ffffff', 
-        borderBottom: '1px solid #e2e8f0',
-        position: 'sticky', top: 0, zIndex: 50
-      }}>
-        {/* 로고 영역 */}
-        <div style={{ 
-          padding: '12px 20px', 
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          borderBottom: '1px solid #f1f5f9'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', fontSize: '1.1rem', color: '#0f172a' }}>
-            <Shield color="#2563eb" fill="#2563eb" size={20} />
-            <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>바른 회계법인</Link>
+    <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      {/* 상단 헤더 */}
+      <nav style={{ borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, backgroundColor: '#fff', zIndex: 100 }}>
+        <div style={{ padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Shield color="#1e40af" fill="#1e40af" size={22} />
+            <Link href="/" style={{ fontSize: '1.2rem', fontWeight: '800', color: '#111827', textDecoration: 'none' }}>
+              바른 회계법인
+            </Link>
           </div>
-          <Link href="/admin" style={{ color: '#64748b' }}>
-            <LayoutDashboard size={20} />
-          </Link>
+          <Link href="/admin" style={{ color: '#9ca3af' }}><LayoutDashboard size={20} /></Link>
         </div>
 
-        {/* 메뉴 영역: 모바일에서 가로로 넘길 수 있게 수정 */}
-        <div style={{ 
-          overflowX: 'auto', 
-          whiteSpace: 'nowrap', 
-          padding: '10px 10px',
-          WebkitOverflowScrolling: 'touch' // 아이폰 부드러운 스크롤
-        }}>
-          <ul style={{ 
-            display: 'inline-flex', listStyle: 'none', gap: '15px', margin: 0, padding: '0 10px'
-          }}>
-            {menus.map((menu) => (
-              <li key={menu.id}>
-                <Link href={menu.path} style={{ 
-                  display: 'flex', alignItems: 'center', gap: '5px',
-                  color: '#475569', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '600',
-                  padding: '6px 12px', backgroundColor: '#f8fafc', borderRadius: '20px',
-                  border: '1px solid #f1f5f9'
-                }}>
-                  {getIcon(menu.name)}
-                  {menu.name}
-                </Link>
-              </li>
-            ))}
+        {/* 사각형 탭 메뉴 영역 */}
+        <div style={{ overflowX: 'auto', display: 'flex', borderTop: '1px solid #f3f4f6' }}>
+          <ul style={{ display: 'flex', listStyle: 'none', margin: 0, padding: 0 }}>
+            {menus.map((menu) => {
+              const isActive = router.pathname === menu.path;
+              return (
+                <li key={menu.id}>
+                  <Link href={menu.path} style={{
+                    display: 'block',
+                    padding: '14px 20px',
+                    fontSize: '0.95rem',
+                    fontWeight: isActive ? '700' : '500',
+                    color: isActive ? '#1e40af' : '#4b5563',
+                    textDecoration: 'none',
+                    borderBottom: isActive ? '3px solid #1e40af' : '3px solid transparent',
+                    transition: 'all 0.2s',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {menu.name}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </nav>
 
-      {/* 메인 콘텐츠 */}
-      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
+      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '30px 20px' }}>
         {children}
       </main>
 
-      <footer style={{ padding: '40px 20px', backgroundColor: '#1e293b', color: '#f8fafc', marginTop: '60px', textAlign: 'center' }}>
-        <p style={{ fontSize: '0.75rem', opacity: 0.7, lineHeight: '1.6' }}>
-          © 2026 바른 회계법인. All rights reserved.
-        </p>
-      </footer>
-
-      {/* 가로 스크롤바 숨기기 스타일 */}
       <style jsx global>{`
+        body { margin: 0; padding: 0; }
         div::-webkit-scrollbar { display: none; }
-        div { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </div>
   );
