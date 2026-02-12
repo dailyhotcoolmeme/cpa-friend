@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Lock, Save, Plus, Trash2, Palette, Type, Briefcase, Calendar, Settings } from 'lucide-react';
+import { Lock, Save, Plus, Trash2, Palette, Type, Briefcase, Calendar, Settings, List } from 'lucide-react';
 
 export default function AdminHome() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -8,6 +8,8 @@ export default function AdminHome() {
   const [businessAreas, setBusinessAreas] = useState([]);
   const [history, setHistory] = useState([]);
   const [design, setDesign] = useState({});
+  // 메뉴 상태 추가
+  const [menus, setMenus] = useState([]);
 
   // 비밀번호 확인 함수
   async function checkPassword() {
@@ -23,18 +25,30 @@ export default function AdminHome() {
     const { data: b } = await supabase.from('business_areas').select('*').order('sort_order');
     const { data: h } = await supabase.from('history').select('*').order('event_date', { ascending: false });
     const { data: d } = await supabase.from('site_design').select('*');
+    // 메뉴 데이터 불러오기
+    const { data: m } = await supabase.from('menu_settings').select('*').order('id');
     
     setBusinessAreas(b || []);
     setHistory(h || []);
+    setMenus(m || []);
     
     const designObj = {};
     d?.forEach(item => { designObj[item.key] = item.value; });
     setDesign(designObj);
   }
 
-  // ★ 일괄 저장 함수 (에러 해결 핵심)
+  // ★ 일괄 저장 함수
   const saveAllChanges = async () => {
     try {
+      // 0. 메뉴 저장 (추가된 부분)
+      for (const m of menus) {
+        if (typeof m.id === 'number' && m.id > 1000000000000) {
+          await supabase.from('menu_settings').insert({ name: m.name, link: m.link });
+        } else {
+          await supabase.from('menu_settings').update({ name: m.name, link: m.link }).eq('id', m.id);
+        }
+      }
+
       // 1. 사업 영역 저장
       for (const area of businessAreas) {
         if (typeof area.id === 'number' && area.id > 1000000000000) {
@@ -60,6 +74,18 @@ export default function AdminHome() {
     } catch (err) {
       console.error(err);
       alert('저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 메뉴 삭제 함수
+  const deleteMenu = async (id) => {
+    if (typeof id === 'number' && id > 1000000000000) {
+      setMenus(menus.filter(m => m.id !== id));
+    } else {
+      if (confirm('정말 삭제하시겠습니까?')) {
+        await supabase.from('menu_settings').delete().eq('id', id);
+        loadAllData();
+      }
     }
   };
 
@@ -91,6 +117,25 @@ export default function AdminHome() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 20px 150px', backgroundColor: '#fdfdfd' }}>
       
+      {/* 0. 메뉴 관리 섹션 (원복된 부분) */}
+      <section style={{ marginBottom: '50px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><List size={20} /> 메뉴 관리</h3>
+          <button onClick={() => setMenus([...menus, { id: Date.now(), name: '새 메뉴', link: '/' }])} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer', backgroundColor: '#fff' }}>+ 메뉴 추가</button>
+        </div>
+        <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px' }}>
+          {menus.map(menu => (
+            <div key={menu.id} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+              <input placeholder="메뉴명" value={menu.name} onChange={(e) => setMenus(menus.map(m => m.id === menu.id ? {...m, name: e.target.value} : m))} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
+              <input placeholder="링크 (예: /about)" value={menu.link} onChange={(e) => setMenus(menus.map(m => m.id === menu.id ? {...m, link: e.target.value} : m))} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
+              <button onClick={() => deleteMenu(menu.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <hr style={{ margin: '40px 0', border: '0', borderTop: '1px solid #e2e8f0' }} />
+
       {/* 1. 사업 영역 내용 관리 */}
       <section style={{ marginBottom: '50px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
