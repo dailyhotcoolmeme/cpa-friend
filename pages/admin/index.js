@@ -1,47 +1,74 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../lib/supabaseClient';
+import { Save, List } from 'lucide-react';
 
 export default function AdminHome() {
   const [menus, setMenus] = useState([]);
 
-  // 1. 현재 저장된 메뉴들 불러오기
-  useEffect(() => {
-    fetchMenus();
+  // 1. 함수를 위로 올렸습니다 (에러 해결 포인트)
+  const fetchMenus = useCallback(async () => {
+    const { data } = await supabase
+      .from('site_menu')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    setMenus(data || []);
   }, []);
 
-  async function fetchMenus() {
-    const { data } = await supabase.from('site_menu').select('*').order('sort_order', { ascending: true });
-    setMenus(data || []);
-  }
+  useEffect(() => {
+    fetchMenus();
+  }, [fetchMenus]);
 
   // 2. 메뉴 이름 수정 기능
   async function updateMenuName(id, newName) {
-    await supabase.from('site_menu').update({ name: newName }).eq('id', id);
-    fetchMenus(); // 수정한 뒤 다시 불러오기
+    if (!newName) return;
+    const { error } = await supabase
+      .from('site_menu')
+      .update({ name: newName })
+      .eq('id', id);
+    
+    if (error) alert('수정 실패: ' + error.message);
+    else fetchMenus(); // 새로고침
   }
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      <h2>🛠️ 관리자 페이지 - 메뉴 설정</h2>
-      <p>여기서 수정하면 홈페이지 상단 메뉴가 즉시 바뀝니다.</p>
-      <hr />
-      
-      {menus.map((menu) => (
-        <div key={menu.id} style={{ marginBottom: '15px', padding: '10px', border: '1px solid #ddd' }}>
-          <label style={{ display: 'block', fontSize: '0.8rem' }}>메뉴명</label>
-          <input 
-            type="text" 
-            defaultValue={menu.name} 
-            onBlur={(e) => updateMenuName(menu.id, e.target.value)}
-            style={{ padding: '5px', width: '70%', marginRight: '10px' }}
-          />
-          <span>(순서: {menu.sort_order})</span>
-        </div>
-      ))}
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
+        <List size={28} color="#2563eb" />
+        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', margin: 0 }}>메뉴 구성 관리</h2>
+      </div>
 
-      <div style={{ marginTop: '30px', padding: '15px', backgroundColor: '#f9f9f9' }}>
-        <h4>💡 도움말</h4>
-        <p>글자를 고치고 칸 밖을 클릭하면 자동으로 저장됩니다.</p>
+      <div style={{ display: 'grid', gap: '15px' }}>
+        {menus.map((menu) => (
+          <div key={menu.id} style={{ 
+            backgroundColor: 'white', padding: '20px', borderRadius: '12px', 
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', 
+            alignItems: 'center', gap: '15px', border: '1px solid #e2e8f0' 
+          }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', marginBottom: '5px' }}>
+                메뉴 이름 (수정 후 칸 밖을 클릭하세요)
+              </label>
+              <input 
+                type="text" 
+                defaultValue={menu.name} 
+                onBlur={(e) => updateMenuName(menu.id, e.target.value)}
+                style={{ 
+                  padding: '8px 12px', width: '100%', borderRadius: '6px', 
+                  border: '1px solid #cbd5e1', fontSize: '1rem' 
+                }}
+              />
+            </div>
+            <div style={{ textAlign: 'right', minWidth: '80px' }}>
+              <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>순서: {menu.sort_order}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#eff6ff', borderRadius: '12px', color: '#1e40af' }}>
+        <p style={{ margin: 0, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Save size={16} /> 메뉴 이름을 바꾸고 입력창 바깥을 누르면 즉시 홈페이지에 반영됩니다.
+        </p>
       </div>
     </div>
   );
