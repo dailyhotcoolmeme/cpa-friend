@@ -185,11 +185,61 @@ export default function AdminHome() {
         </div>
         {history.map(h => (
           <div key={h.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '15px', marginBottom: '15px' }}>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <input style={{ width: '90px', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', textAlign: 'center' }} value={h.event_date} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, event_date: e.target.value} : item))} />
-              <input style={{ flex: 1, fontWeight: 'bold', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={h.title} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, title: e.target.value} : item))} />
-              <button onClick={() => setHistory(history.filter(item => item.id !== h.id))} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
-            </div>
+           <div style={{ 
+  display: 'flex', 
+  alignItems: 'center',
+  gap: '8px', 
+  marginBottom: '10px' 
+}}>
+  
+  <input 
+    style={{ 
+      width: '80px',   // 🔥 날짜 조금 줄임
+      padding: '6px', 
+      border: '1px solid #cbd5e1', 
+      borderRadius: '4px', 
+      textAlign: 'center' 
+    }} 
+    value={h.event_date}
+    onChange={(e) =>
+      setHistory(history.map(item =>
+        item.id === h.id ? { ...item, event_date: e.target.value } : item
+      ))
+    }
+  />
+
+  <input 
+    style={{ 
+      flex: 1,
+      minWidth: 0,     // 🔥 이거 중요 (flex overflow 방지)
+      fontWeight: 'bold', 
+      padding: '6px', 
+      border: '1px solid #cbd5e1', 
+      borderRadius: '4px' 
+    }} 
+    value={h.title}
+    onChange={(e) =>
+      setHistory(history.map(item =>
+        item.id === h.id ? { ...item, title: e.target.value } : item
+      ))
+    }
+  />
+
+  <button
+    onClick={() => setHistory(history.filter(item => item.id !== h.id))}
+    style={{ 
+      flexShrink: 0,      // 🔥 줄어들지 않게
+      padding: '6px',
+      borderRadius: '6px',
+      backgroundColor: '#fef2f2',
+      border: '1px solid #fecaca',
+      cursor: 'pointer'
+    }}
+  >
+    <Trash2 size={18} color="#ef4444" />
+  </button>
+
+</div>
             <textarea style={{ width: '100%', padding: '8px', fontSize: '0.9rem', border: '1px solid #e2e8f0', borderRadius: '4px' }} value={h.description || ''} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, description: e.target.value} : item))} />
           </div>
         ))}
