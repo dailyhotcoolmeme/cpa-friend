@@ -2,7 +2,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Shield, LayoutDashboard } from 'lucide-react';
+import { 
+  Shield, 
+  User, 
+  BookOpen, 
+  MapPin, 
+  MessageSquare, 
+  LayoutDashboard,
+  Menu
+} from 'lucide-react';
 
 export default function Layout({ children }) {
   const [menus, setMenus] = useState([]);
@@ -20,6 +28,16 @@ export default function Layout({ children }) {
     fetchMenus();
   }, []);
 
+  // 메뉴명에 따른 아이콘 매칭 함수
+  const getIcon = (name) => {
+    if (name.includes('회사')) return <Shield size={18} />;
+    if (name.includes('회계사')) return <User size={18} />;
+    if (name.includes('정보') || name.includes('광장')) return <BookOpen size={18} />;
+    if (name.includes('오시는') || name.includes('길')) return <MapPin size={18} />;
+    if (name.includes('게시판') || name.includes('상담')) return <MessageSquare size={18} />;
+    return <Menu size={18} />;
+  };
+
   return (
     <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', fontFamily: 'sans-serif' }}>
       {/* 상단 헤더 */}
@@ -34,15 +52,22 @@ export default function Layout({ children }) {
           <Link href="/admin" style={{ color: '#9ca3af' }}><LayoutDashboard size={20} /></Link>
         </div>
 
-        {/* 사각형 탭 메뉴 영역 */}
-        <div style={{ overflowX: 'auto', display: 'flex', borderTop: '1px solid #f3f4f6' }}>
+        {/* 사각형 탭 + 아이콘 메뉴 영역 */}
+        <div style={{ 
+          overflowX: 'auto', 
+          display: 'flex', 
+          borderTop: '1px solid #f3f4f6',
+          WebkitOverflowScrolling: 'touch'
+        }}>
           <ul style={{ display: 'flex', listStyle: 'none', margin: 0, padding: 0 }}>
             {menus.map((menu) => {
               const isActive = router.pathname === menu.path;
               return (
                 <li key={menu.id}>
                   <Link href={menu.path} style={{
-                    display: 'block',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
                     padding: '14px 20px',
                     fontSize: '0.95rem',
                     fontWeight: isActive ? '700' : '500',
@@ -52,6 +77,9 @@ export default function Layout({ children }) {
                     transition: 'all 0.2s',
                     whiteSpace: 'nowrap'
                   }}>
+                    <span style={{ display: 'flex', alignItems: 'center', color: isActive ? '#1e40af' : '#94a3b8' }}>
+                      {getIcon(menu.name)}
+                    </span>
                     {menu.name}
                   </Link>
                 </li>
@@ -65,9 +93,17 @@ export default function Layout({ children }) {
         {children}
       </main>
 
+      <footer style={{ padding: '40px 20px', backgroundColor: '#f8fafc', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
+        <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+          © 2026 바른 회계법인. All rights reserved.
+        </p>
+      </footer>
+
       <style jsx global>{`
         body { margin: 0; padding: 0; }
+        /* 가로 스크롤바 숨기기 */
         div::-webkit-scrollbar { display: none; }
+        div { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </div>
   );
