@@ -79,18 +79,28 @@ export default function AdminHome() {
     }
   };
 
-  const renderDesignSetting = (label, k, type = "number") => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-      <span style={{ fontSize: '0.85rem', width: '130px', color: '#475569' }}>{label}</span>
-      <input 
-        type={type} 
-        value={design[k] || ''} 
-        onChange={(e) => setDesign({ ...design, [k]: e.target.value })} 
-        style={{ width: type === "number" ? '60px' : '65px', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
-      />
-      {type === "number" && <span style={{ fontSize: '0.75rem' }}>pt</span>}
-    </div>
-  );
+  const renderDesignSetting = (label, k, type = "number", fallbackValue = "") => {
+    const currentValue = design[k] || fallbackValue || '';
+    const isColor = type === 'color';
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+        <span style={{ fontSize: '0.85rem', width: '130px', color: '#475569' }}>{label}</span>
+        <input 
+          type={type} 
+          value={currentValue} 
+          onChange={(e) => setDesign({ ...design, [k]: e.target.value })} 
+          style={{ 
+            width: type === "number" ? '60px' : isColor ? '44px' : '65px', 
+            height: isColor ? '30px' : 'auto',
+            padding: isColor ? '0' : '4px', 
+            border: '1px solid #cbd5e1', 
+            borderRadius: '4px' 
+          }}
+        />
+        {type === "number" && <span style={{ fontSize: '0.75rem' }}>pt</span>}
+      </div>
+    );
+  };
 
   if (!isAuthorized) {
     return (
@@ -162,15 +172,15 @@ export default function AdminHome() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
             <div>
               {renderDesignSetting("메인 헤드라인 크기", "biz_head_size")}
-              {renderDesignSetting("메인 헤드라인 색상", "biz_head_color", "text")}
+              {renderDesignSetting("메인 헤드라인 색상", "biz_head_color", "color", "#111827")}
             </div>
             <div>
               {renderDesignSetting("박스 제목 크기", "biz_title_size")}
-              {renderDesignSetting("박스 제목 색상", "biz_title_color", "text")}
+              {renderDesignSetting("박스 제목 색상", "biz_title_color", "color", "#1e40af")}
             </div>
             <div>
               {renderDesignSetting("상세 내용 크기", "biz_content_size")}
-              {renderDesignSetting("상세 내용 색상", "biz_content_color", "text")}
+              {renderDesignSetting("상세 내용 색상", "biz_content_color", "color", "#4b5563")}
             </div>
           </div>
         </div>
@@ -185,14 +195,36 @@ export default function AdminHome() {
         </div>
         {history.map(h => (
           <div key={h.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '15px', marginBottom: '15px' }}>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <input style={{ width: '90px', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', textAlign: 'center' }} value={h.event_date} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, event_date: e.target.value} : item))} />
-              <input style={{ flex: 1, fontWeight: 'bold', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={h.title} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, title: e.target.value} : item))} />
-              <button onClick={() => setHistory(history.filter(item => item.id !== h.id))} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <input style={{ width: '90px', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', textAlign: 'center', flexShrink: 0 }} value={h.event_date} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, event_date: e.target.value} : item))} />
+              <input style={{ flex: 1, minWidth: '160px', fontWeight: 'bold', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={h.title} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, title: e.target.value} : item))} />
+              <button onClick={() => setHistory(history.filter(item => item.id !== h.id))} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}><Trash2 size={20} /></button>
             </div>
             <textarea style={{ width: '100%', padding: '8px', fontSize: '0.9rem', border: '1px solid #e2e8f0', borderRadius: '4px' }} value={h.description || ''} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, description: e.target.value} : item))} />
           </div>
         ))}
+        
+        <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed #cbd5e1', marginTop: '20px' }}>
+          <h4 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#64748b' }}><Settings size={16} /> 회사 연혁 스타일 설정</h4>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+            <div>
+              {renderDesignSetting("헤드라인 크기", "hist_head_size")}
+              {renderDesignSetting("헤드라인 색상", "hist_head_color", "color", "#111827")}
+            </div>
+            <div>
+              {renderDesignSetting("날짜 크기", "hist_date_size")}
+              {renderDesignSetting("날짜 색상", "hist_date_color", "color", "#2563eb")}
+            </div>
+            <div>
+              {renderDesignSetting("제목 크기", "hist_title_size")}
+              {renderDesignSetting("제목 색상", "hist_title_color", "color", "#111827")}
+            </div>
+            <div>
+              {renderDesignSetting("내용 크기", "hist_desc_size")}
+              {renderDesignSetting("내용 색상", "hist_desc_color", "color", "#6b7280")}
+            </div>
+          </div>
+        </div>
       </section>
 
       <div style={{ position: 'fixed', bottom: '0', left: '0', right: '0', backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', padding: '20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'center', zIndex: 1000 }}>
