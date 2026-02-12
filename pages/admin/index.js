@@ -59,6 +59,20 @@ export default function AdminHome() {
     }
   };
 
+  const renderDesignSetting = (label, k, type = "number") => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+      <span style={{ fontSize: '0.85rem', width: '130px', color: '#475569' }}>{label}</span>
+      {type === "number" ? <Type size={14} color="#94a3b8" /> : <Palette size={14} color="#94a3b8" />}
+      <input 
+        type={type} 
+        value={design[k] || ''} 
+        onChange={(e) => setDesign({ ...design, [k]: e.target.value })} 
+        style={{ width: type === "number" ? '60px' : '45px', padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
+      />
+      {type === "number" && <span style={{ fontSize: '0.75rem' }}>pt</span>}
+    </div>
+  );
+
   if (!isAuthorized) {
     return (
       <div style={{ height: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
@@ -73,144 +87,40 @@ export default function AdminHome() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 20px 150px', backgroundColor: '#fdfdfd' }}>
 
-      {/* 회사 연혁 관리 */}
-      <section style={{ marginBottom: '50px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Calendar size={20} /> 회사 연혁 내용 관리
-          </h3>
-          <button
-            onClick={() => setHistory([{ id: Date.now(), event_date: '2026.01', title: '새 연혁', description: '내용' }, ...history])}
-            style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer', backgroundColor: '#fff' }}
-          >
-            + 연혁 추가
-          </button>
-        </div>
-
-        {history.map(h => (
-          <div
-            key={h.id}
-            style={{
-              backgroundColor: '#fff',
-              border: '1px solid #e2e8f0',
-              borderRadius: '12px',
-              padding: '15px',
-              marginBottom: '15px'
-            }}
-          >
-
-            {/* 🔥 수정된 부분 */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '10px'
-              }}
-            >
-              <input
-                style={{
-                  width: '80px',
-                  padding: '6px',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '4px',
-                  textAlign: 'center'
-                }}
-                value={h.event_date}
-                onChange={(e) =>
-                  setHistory(history.map(item =>
-                    item.id === h.id ? { ...item, event_date: e.target.value } : item
-                  ))
-                }
-              />
-
-              <input
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  fontWeight: 'bold',
-                  padding: '6px',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '4px'
-                }}
-                value={h.title}
-                onChange={(e) =>
-                  setHistory(history.map(item =>
-                    item.id === h.id ? { ...item, title: e.target.value } : item
-                  ))
-                }
-              />
-
-              <button
-                onClick={() => setHistory(history.filter(item => item.id !== h.id))}
-                style={{
-                  flexShrink: 0,
-                  padding: '6px',
-                  borderRadius: '6px',
-                  backgroundColor: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  cursor: 'pointer'
-                }}
-              >
-                <Trash2 size={18} color="#ef4444" />
-              </button>
-            </div>
-
-            <textarea
-              style={{
-                width: '100%',
-                padding: '8px',
-                fontSize: '0.9rem',
-                border: '1px solid #e2e8f0',
-                borderRadius: '4px'
-              }}
-              value={h.description || ''}
-              onChange={(e) =>
-                setHistory(history.map(item =>
-                  item.id === h.id ? { ...item, description: e.target.value } : item
-                ))
-              }
+      {/* 회사 연혁 부분만 수정 */}
+      {history.map(h => (
+        <div key={h.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '15px', marginBottom: '15px' }}>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+            
+            <input
+              style={{ width: '80px', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', textAlign: 'center' }}
+              value={h.event_date}
+              onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, event_date: e.target.value} : item))}
             />
-          </div>
-        ))}
-      </section>
 
-      {/* 저장 버튼 */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: '0',
-          left: '0',
-          right: '0',
-          backgroundColor: 'rgba(255,255,255,0.9)',
-          backdropFilter: 'blur(10px)',
-          padding: '20px',
-          borderTop: '1px solid #e2e8f0',
-          display: 'flex',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}
-      >
-        <button
-          onClick={saveAllChanges}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '15px 60px',
-            backgroundColor: '#1e40af',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '12px',
-            fontWeight: '800',
-            fontSize: '1.1rem',
-            boxShadow: '0 4px 15px rgba(30, 64, 175, 0.3)',
-            cursor: 'pointer'
-          }}
-        >
-          <Save size={22} /> 설정 내용 한 번에 저장하기
-        </button>
-      </div>
+            <input
+              style={{ flex: 1, minWidth: 0, fontWeight: 'bold', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px' }}
+              value={h.title}
+              onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, title: e.target.value} : item))}
+            />
+
+            <button
+              onClick={() => setHistory(history.filter(item => item.id !== h.id))}
+              style={{ flexShrink: 0, padding: '6px', borderRadius: '6px', backgroundColor: '#fef2f2', border: '1px solid #fecaca', cursor: 'pointer' }}
+            >
+              <Trash2 size={18} color="#ef4444" />
+            </button>
+
+          </div>
+
+          <textarea
+            style={{ width: '100%', padding: '8px', fontSize: '0.9rem', border: '1px solid #e2e8f0', borderRadius: '4px' }}
+            value={h.description || ''}
+            onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, description: e.target.value} : item))}
+          />
+        </div>
+      ))}
     </div>
   );
 }
