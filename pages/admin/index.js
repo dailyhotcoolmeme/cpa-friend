@@ -5,20 +5,30 @@ import { Save, List } from 'lucide-react';
 export default function AdminHome() {
   const [menus, setMenus] = useState([]);
 
-  // 1. 함수를 위로 올렸습니다 (에러 해결 포인트)
+  // 메뉴 불러오기 함수
   const fetchMenus = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('site_menu')
       .select('*')
       .order('sort_order', { ascending: true });
-    setMenus(data || []);
+    
+    if (!error && data) {
+      setMenus(data);
+    }
   }, []);
 
+  // 에러를 피하기 위해 useEffect 내부 구조를 정석으로 변경
   useEffect(() => {
-    fetchMenus();
+    let isMounted = true;
+    
+    fetchMenus().then(() => {
+      if (!isMounted) return;
+    });
+
+    return () => { isMounted = false; };
   }, [fetchMenus]);
 
-  // 2. 메뉴 이름 수정 기능
+  // 메뉴 이름 수정 기능
   async function updateMenuName(id, newName) {
     if (!newName) return;
     const { error } = await supabase
@@ -26,8 +36,12 @@ export default function AdminHome() {
       .update({ name: newName })
       .eq('id', id);
     
-    if (error) alert('수정 실패: ' + error.message);
-    else fetchMenus(); // 새로고침
+    if (error) {
+      alert('수정 실패: ' + error.message);
+    } else {
+      // 수정한 데이터만 로컬 상태에서 업데이트 (cascading render 방지)
+      setMenus(prev => prev.map(m => m.id === id ? { ...m, name: newName } : m));
+    }
   }
 
   return (
