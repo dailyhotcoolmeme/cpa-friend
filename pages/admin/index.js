@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Lock, List, Save } from 'lucide-react';
+import { Lock, List, Save, Eye, EyeOff } from 'lucide-react';
 
 export default function AdminHome() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [inputPw, setInputPw] = useState('');
   const [menus, setMenus] = useState([]);
 
-  // 비번 체크 함수
   async function checkPassword() {
     const { data } = await supabase.from('admin_config').select('value').eq('key', 'admin_password').single();
     if (data && data.value === inputPw) {
@@ -23,12 +22,19 @@ export default function AdminHome() {
     if (data) setMenus(data);
   }
 
+  // 메뉴 이름 수정
   async function updateMenuName(id, newName) {
+    if (!newName) return;
     const { error } = await supabase.from('site_menu').update({ name: newName }).eq('id', id);
     if (!error) setMenus(prev => prev.map(m => m.id === id ? { ...m, name: newName } : m));
   }
 
-  // 로그인 전 화면
+  // 메뉴 보임/숨김 토글 기능 추가
+  async function toggleVisibility(id, currentStatus) {
+    const { error } = await supabase.from('site_menu').update({ is_visible: !currentStatus }).eq('id', id);
+    if (!error) setMenus(prev => prev.map(m => m.id === id ? { ...m, is_visible: !currentStatus } : m));
+  }
+
   if (!isAuthorized) {
     return (
       <div style={{ height: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
@@ -49,24 +55,38 @@ export default function AdminHome() {
     );
   }
 
-  // 로그인 후 관리 화면
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
         <List size={24} color="#1e40af" />
         <h2 style={{ margin: 0 }}>메뉴 관리</h2>
       </div>
-      {menus.map(menu => (
-        <div key={menu.id} style={{ marginBottom: '15px', padding: '15px', border: '1px solid #eee', borderRadius: '10px' }}>
-          <input 
-            type="text" 
-            defaultValue={menu.name} 
-            onBlur={(e) => updateMenuName(menu.id, e.target.value)}
-            style={{ width: '100%', padding: '8px', border: 'none', borderBottom: '1px solid #ddd', fontSize: '1rem' }}
-          />
-        </div>
-      ))}
-      <p style={{ color: '#666', fontSize: '0.8rem' }}><Save size={12} /> 입력 후 칸 밖을 클릭하면 저장됩니다.</p>
+      
+      <div style={{ display: 'grid', gap: '10px' }}>
+        {menus.map(menu => (
+          <div key={menu.id} style={{ 
+            display: 'flex', alignItems: 'center', gap: '10px', 
+            padding: '15px', border: '1px solid #eee', borderRadius: '10px',
+            backgroundColor: menu.is_visible ? '#fff' : '#f9fafb'
+          }}>
+            <button 
+              onClick={() => toggleVisibility(menu.id, menu.is_visible)}
+              style={{ border: 'none', background: 'none', cursor: 'pointer', color: menu.is_visible ? '#1e40af' : '#94a3b8' }}
+            >
+              {menu.is_visible ? <Eye size={20} /> : <EyeOff size={20} />}
+            </button>
+            <input 
+              type="text" 
+              defaultValue={menu.name} 
+              onBlur={(e) => updateMenuName(menu.id, e.target.value)}
+              style={{ flex: 1, padding: '8px', border: 'none', borderBottom: '1px solid #ddd', fontSize: '1rem', background: 'transparent' }}
+            />
+          </div>
+        ))}
+      </div>
+      <p style={{ color: '#666', fontSize: '0.8rem', marginTop: '20px' }}>
+        <Save size={12} /> 눈 아이콘을 눌러 메뉴를 숨기거나 보일 수 있습니다. 수정 후 칸 밖을 클릭하면 저장됩니다.
+      </p>
     </div>
   );
 }
