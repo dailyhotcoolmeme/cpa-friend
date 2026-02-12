@@ -1,36 +1,31 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { Save, List } from 'lucide-react';
 
 export default function AdminHome() {
   const [menus, setMenus] = useState([]);
 
-  // 메뉴 불러오기 함수
-  const fetchMenus = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('site_menu')
-      .select('*')
-      .order('sort_order', { ascending: true });
-    
-    if (!error && data) {
-      setMenus(data);
-    }
-  }, []);
-
-  // 에러를 피하기 위해 useEffect 내부 구조를 정석으로 변경
+  // useEffect 안에서 모든 비동기 처리를 완료하는 구조로 변경
   useEffect(() => {
-    let isMounted = true;
+    async function loadInitialData() {
+      const { data, error } = await supabase
+        .from('site_menu')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      
+      if (!error && data) {
+        setMenus(data);
+      }
+    }
     
-    fetchMenus().then(() => {
-      if (!isMounted) return;
-    });
+    loadInitialData();
+  }, []); // 처음에 한 번만 실행
 
-    return () => { isMounted = false; };
-  }, [fetchMenus]);
-
-  // 메뉴 이름 수정 기능
+  // 메뉴 이름 수정 기능 (상태 최적화)
   async function updateMenuName(id, newName) {
     if (!newName) return;
+    
+    // 1. 서버 업데이트
     const { error } = await supabase
       .from('site_menu')
       .update({ name: newName })
@@ -39,7 +34,7 @@ export default function AdminHome() {
     if (error) {
       alert('수정 실패: ' + error.message);
     } else {
-      // 수정한 데이터만 로컬 상태에서 업데이트 (cascading render 방지)
+      // 2. 서버 통신 성공 시에만 로컬 상태 반영 (전체 리렌더링 방지)
       setMenus(prev => prev.map(m => m.id === id ? { ...m, name: newName } : m));
     }
   }
@@ -60,7 +55,7 @@ export default function AdminHome() {
           }}>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', marginBottom: '5px' }}>
-                메뉴 이름 (수정 후 칸 밖을 클릭하세요)
+                메뉴 이름
               </label>
               <input 
                 type="text" 
