@@ -8,8 +8,7 @@ export default function AdminHome() {
   const [businessAreas, setBusinessAreas] = useState([]);
   const [history, setHistory] = useState([]);
   const [design, setDesign] = useState({});
-  // 메뉴 상태 추가
-  const [menus, setMenus] = useState([]);
+  const [menus, setMenus] = useState([]); // 기존 메뉴 리스트 상태
 
   // 비밀번호 확인 함수
   async function checkPassword() {
@@ -25,22 +24,21 @@ export default function AdminHome() {
     const { data: b } = await supabase.from('business_areas').select('*').order('sort_order');
     const { data: h } = await supabase.from('history').select('*').order('event_date', { ascending: false });
     const { data: d } = await supabase.from('site_design').select('*');
-    // 메뉴 데이터 불러오기
-    const { data: m } = await supabase.from('menu_settings').select('*').order('id');
+    const { data: m } = await supabase.from('menu_settings').select('*').order('id'); // 기존 메뉴들 가져오기
     
     setBusinessAreas(b || []);
     setHistory(h || []);
-    setMenus(m || []);
+    setMenus(m || []); // 메뉴 리스트 바인딩
     
     const designObj = {};
     d?.forEach(item => { designObj[item.key] = item.value; });
     setDesign(designObj);
   }
 
-  // ★ 일괄 저장 함수
+  // 일괄 저장 함수
   const saveAllChanges = async () => {
     try {
-      // 0. 메뉴 저장 (추가된 부분)
+      // 1. 메뉴 저장 및 업데이트
       for (const m of menus) {
         if (typeof m.id === 'number' && m.id > 1000000000000) {
           await supabase.from('menu_settings').insert({ name: m.name, link: m.link });
@@ -49,7 +47,7 @@ export default function AdminHome() {
         }
       }
 
-      // 1. 사업 영역 저장
+      // 2. 사업 영역 저장
       for (const area of businessAreas) {
         if (typeof area.id === 'number' && area.id > 1000000000000) {
            await supabase.from('business_areas').insert({ title: area.title, content: area.content });
@@ -57,7 +55,7 @@ export default function AdminHome() {
            await supabase.from('business_areas').update({ title: area.title, content: area.content }).eq('id', area.id);
         }
       }
-      // 2. 회사 연혁 저장
+      // 3. 회사 연혁 저장
       for (const h of history) {
         if (typeof h.id === 'number' && h.id > 1000000000000) {
            await supabase.from('history').insert({ event_date: h.event_date, title: h.title, description: h.description });
@@ -65,7 +63,7 @@ export default function AdminHome() {
            await supabase.from('history').update({ event_date: h.event_date, title: h.title, description: h.description }).eq('id', h.id);
         }
       }
-      // 3. 통합 디자인 설정 저장
+      // 4. 통합 디자인 설정 저장
       const designEntries = Object.entries(design).map(([key, value]) => ({ key, value }));
       await supabase.from('site_design').upsert(designEntries);
 
@@ -77,14 +75,16 @@ export default function AdminHome() {
     }
   };
 
-  // 메뉴 삭제 함수
-  const deleteMenu = async (id) => {
+  // 메뉴 삭제 함수 (DB 연동)
+  const handleDeleteMenu = async (id) => {
     if (typeof id === 'number' && id > 1000000000000) {
+      // 새로 추가했다가 저장 전인 항목은 로컬에서만 삭제
       setMenus(menus.filter(m => m.id !== id));
     } else {
-      if (confirm('정말 삭제하시겠습니까?')) {
-        await supabase.from('menu_settings').delete().eq('id', id);
-        loadAllData();
+      // 이미 DB에 있는 항목은 진짜 삭제
+      if (confirm('메뉴를 삭제하시겠습니까?')) {
+        const { error } = await supabase.from('menu_settings').delete().eq('id', id);
+        if (!error) loadAllData();
       }
     }
   };
@@ -117,18 +117,19 @@ export default function AdminHome() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 20px 150px', backgroundColor: '#fdfdfd' }}>
       
-      {/* 0. 메뉴 관리 섹션 (원복된 부분) */}
+      {/* 0. 메뉴 리스트 및 관리 섹션 */}
       <section style={{ marginBottom: '50px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><List size={20} /> 메뉴 관리</h3>
-          <button onClick={() => setMenus([...menus, { id: Date.now(), name: '새 메뉴', link: '/' }])} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer', backgroundColor: '#fff' }}>+ 메뉴 추가</button>
+          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><List size={20} /> 메뉴 구성 관리</h3>
+          <button onClick={() => setMenus([...menus, { id: Date.now(), name: '', link: '/' }])} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer', backgroundColor: '#fff' }}>+ 메뉴 추가</button>
         </div>
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px' }}>
+          {menus.length === 0 && <p style={{ fontSize: '0.9rem', color: '#94a3b8', textAlign: 'center' }}>등록된 메뉴가 없습니다.</p>}
           {menus.map(menu => (
             <div key={menu.id} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <input placeholder="메뉴명" value={menu.name} onChange={(e) => setMenus(menus.map(m => m.id === menu.id ? {...m, name: e.target.value} : m))} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
-              <input placeholder="링크 (예: /about)" value={menu.link} onChange={(e) => setMenus(menus.map(m => m.id === menu.id ? {...m, link: e.target.value} : m))} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
-              <button onClick={() => deleteMenu(menu.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
+              <input placeholder="메뉴 이름" value={menu.name} onChange={(e) => setMenus(menus.map(m => m.id === menu.id ? {...m, name: e.target.value} : m))} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
+              <input placeholder="이동 경로 (/about)" value={menu.link} onChange={(e) => setMenus(menus.map(m => m.id === menu.id ? {...m, link: e.target.value} : m))} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
+              <button onClick={() => handleDeleteMenu(menu.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
             </div>
           ))}
         </div>
@@ -163,8 +164,8 @@ export default function AdminHome() {
             <button onClick={() => setBusinessAreas(businessAreas.map(a => a.id === area.id ? {...a, content: [...a.content, '']} : a))} style={{ fontSize: '0.8rem', color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>+ 줄 추가</button>
           </div>
         ))}
-
-        {/* 2. 사업 영역 디자인 세트 */}
+        {/* ... (이하 사업영역/연혁 스타일 설정 및 연혁 관리는 베이스 코드와 동일) ... */}
+        
         <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed #cbd5e1', marginTop: '20px' }}>
           <h4 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#64748b' }}><Settings size={16} /> 사업영역 스타일 설정</h4>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
@@ -186,7 +187,7 @@ export default function AdminHome() {
 
       <hr style={{ margin: '60px 0', border: '0', borderTop: '1px solid #e2e8f0' }} />
 
-      {/* 3. 회사 연혁 내용 관리 */}
+      {/* 2. 회사 연혁 내용 관리 */}
       <section style={{ marginBottom: '50px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={20} /> 회사 연혁 내용 관리</h3>
@@ -202,8 +203,7 @@ export default function AdminHome() {
             <textarea style={{ width: '100%', padding: '8px', fontSize: '0.9rem', border: '1px solid #e2e8f0', borderRadius: '4px' }} value={h.description || ''} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, description: e.target.value} : item))} />
           </div>
         ))}
-
-        {/* 4. 회사 연혁 디자인 세트 */}
+        {/* ... (연혁 디자인 설정 부분) ... */}
         <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed #cbd5e1', marginTop: '20px' }}>
           <h4 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#64748b' }}><Settings size={16} /> 회사연혁 스타일 설정</h4>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
@@ -227,20 +227,11 @@ export default function AdminHome() {
       </section>
 
       {/* 5. 저장 버튼 (하단 고정) */}
-      <div style={{ 
-        position: 'fixed', bottom: '0', left: '0', right: '0', 
-        backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)',
-        padding: '20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'center', zIndex: 1000
-      }}>
-        <button onClick={saveAllChanges} style={{ 
-          display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 60px', 
-          backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '12px', 
-          fontWeight: '800', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(30, 64, 175, 0.3)', cursor: 'pointer' 
-        }}>
+      <div style={{ position: 'fixed', bottom: '0', left: '0', right: '0', backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', padding: '20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'center', zIndex: 1000 }}>
+        <button onClick={saveAllChanges} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 60px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(30, 64, 175, 0.3)', cursor: 'pointer' }}>
           <Save size={22} /> 설정 내용 한 번에 저장하기
         </button>
       </div>
-
     </div>
   );
 }
