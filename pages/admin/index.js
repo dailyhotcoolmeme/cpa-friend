@@ -8,7 +8,6 @@ export default function AdminHome() {
   const [businessAreas, setBusinessAreas] = useState([]);
   const [history, setHistory] = useState([]);
   const [design, setDesign] = useState({});
-  // 실제 DB 테이블인 site_menu 데이터를 담는 상태
   const [siteMenus, setSiteMenus] = useState([]);
 
   async function checkPassword() {
@@ -23,12 +22,11 @@ export default function AdminHome() {
     const { data: b } = await supabase.from('business_areas').select('*').order('sort_order');
     const { data: h } = await supabase.from('history').select('*').order('event_date', { ascending: false });
     const { data: d } = await supabase.from('site_design').select('*');
-    // 1. site_menu 테이블에서 실제 메뉴 리스트 불러오기
     const { data: m } = await supabase.from('site_menu').select('*').order('sort_order');
     
     setBusinessAreas(b || []);
     setHistory(h || []);
-    setSiteMenus(m || []); // 메뉴 리스트 바인딩
+    setSiteMenus(m || []);
     
     const designObj = {};
     d?.forEach(item => { designObj[item.key] = item.value; });
@@ -37,19 +35,16 @@ export default function AdminHome() {
 
   const saveAllChanges = async () => {
     try {
-      // 2. 메뉴(site_menu) 일괄 저장/수정
+      // 1. 메뉴(site_menu) 저장 - path 제외
       for (const m of siteMenus) {
-        const menuData = { name: m.name, path: m.path, is_visible: m.is_visible, sort_order: m.sort_order };
+        const menuData = { name: m.name, is_visible: m.is_visible, sort_order: m.sort_order };
         if (typeof m.id === 'number' && m.id > 1000000000000) {
-          // 신규 추가 항목
           await supabase.from('site_menu').insert(menuData);
         } else {
-          // 기존 항목 수정
           await supabase.from('site_menu').update(menuData).eq('id', m.id);
         }
       }
 
-      // 사업 영역 및 연혁 저장 (기존 로직 유지)
       for (const area of businessAreas) {
         if (typeof area.id === 'number' && area.id > 1000000000000) {
            await supabase.from('business_areas').insert({ title: area.title, content: area.content });
@@ -75,7 +70,6 @@ export default function AdminHome() {
     }
   };
 
-  // 메뉴 삭제 함수
   const deleteMenu = async (id) => {
     if (confirm('이 메뉴를 영구 삭제하시겠습니까?')) {
       if (typeof id !== 'number' || id < 1000000000000) {
@@ -112,24 +106,22 @@ export default function AdminHome() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 20px 150px', backgroundColor: '#fdfdfd' }}>
       
-      {/* 🟢 메뉴 관리 섹션 (고친 부분) */}
+      {/* 메뉴 관리 섹션 - path 제거됨 */}
       <section style={{ marginBottom: '50px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><List size={20} /> 홈페이지 메뉴 구성 (site_menu)</h3>
-          <button onClick={() => setSiteMenus([...siteMenus, { id: Date.now(), name: '', path: '/', is_visible: true, sort_order: siteMenus.length + 1 }])} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer', backgroundColor: '#fff' }}>+ 메뉴 추가</button>
+          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><List size={20} /> 홈페이지 메뉴 구성</h3>
+          <button onClick={() => setSiteMenus([...siteMenus, { id: Date.now(), name: '', is_visible: true, sort_order: siteMenus.length + 1 }])} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer', backgroundColor: '#fff' }}>+ 메뉴 추가</button>
         </div>
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px' }}>
-          {siteMenus.map((menu, idx) => (
+          {siteMenus.map((menu) => (
             <div key={menu.id} style={{ display: 'flex', gap: '10px', marginBottom: '12px', alignItems: 'center', opacity: menu.is_visible ? 1 : 0.5 }}>
               <button 
                 onClick={() => setSiteMenus(siteMenus.map(m => m.id === menu.id ? {...m, is_visible: !m.is_visible} : m))}
                 style={{ border: 'none', background: 'none', cursor: 'pointer', color: menu.is_visible ? '#2563eb' : '#94a3b8' }}
-                title={menu.is_visible ? "노출 중" : "숨김 처리됨"}
               >
                 {menu.is_visible ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
               <input placeholder="메뉴 이름" value={menu.name} onChange={(e) => setSiteMenus(siteMenus.map(m => m.id === menu.id ? {...m, name: e.target.value} : m))} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
-              <input placeholder="경로 (/about)" value={menu.path} onChange={(e) => setSiteMenus(siteMenus.map(m => m.id === menu.id ? {...m, path: e.target.value} : m))} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
               <button onClick={() => deleteMenu(menu.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
             </div>
           ))}
@@ -138,7 +130,6 @@ export default function AdminHome() {
 
       <hr style={{ margin: '40px 0', border: '0', borderTop: '1px solid #e2e8f0' }} />
 
-      {/* 사업 영역 관리 (원본 유지) */}
       <section style={{ marginBottom: '50px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Briefcase size={20} /> 사업 영역 내용 관리</h3>
@@ -187,7 +178,6 @@ export default function AdminHome() {
 
       <hr style={{ margin: '60px 0', border: '0', borderTop: '1px solid #e2e8f0' }} />
 
-      {/* 회사 연혁 관리 (원본 유지) */}
       <section style={{ marginBottom: '50px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={20} /> 회사 연혁 내용 관리</h3>
@@ -205,7 +195,6 @@ export default function AdminHome() {
         ))}
       </section>
 
-      {/* 하단 고정 저장 버튼 */}
       <div style={{ position: 'fixed', bottom: '0', left: '0', right: '0', backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', padding: '20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'center', zIndex: 1000 }}>
         <button onClick={saveAllChanges} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 60px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(30, 64, 175, 0.3)', cursor: 'pointer' }}>
           <Save size={22} /> 설정 내용 한 번에 저장하기
