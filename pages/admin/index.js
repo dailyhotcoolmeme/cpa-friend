@@ -122,10 +122,18 @@ export default function AdminHome() {
       return;
     }
     try {
-      if (editingPost.id) {
-        await supabase.from('posts').update(editingPost).eq('id', editingPost.id);
+      const postData = {
+        title: editingPost.title,
+        category: editingPost.category,
+        summary: editingPost.summary,
+        content: editingPost.content,
+        thumbnail: editingPost.thumbnail
+      };
+
+      if (editingPost.id && typeof editingPost.id === 'number') {
+        await supabase.from('posts').update(postData).eq('id', editingPost.id);
       } else {
-        await supabase.from('posts').insert(editingPost);
+        await supabase.from('posts').insert(postData);
       }
       alert('글이 저장되었습니다.');
       setEditingPost(null);

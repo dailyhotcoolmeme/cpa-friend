@@ -129,8 +129,14 @@ export default function InfoSquare() {
                             <div style={{ padding: '24px', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                                     <span style={{
-                                        backgroundColor: '#eff6ff',
-                                        color: '#2563eb',
+                                        backgroundColor:
+                                            post.category === 'accounting' ? '#eff6ff' :
+                                                post.category === 'tax' ? '#fff7ed' :
+                                                    post.category === 'nonprofit' ? '#f0fdf4' : '#f1f5f9',
+                                        color:
+                                            post.category === 'accounting' ? '#2563eb' :
+                                                post.category === 'tax' ? '#ea580c' :
+                                                    post.category === 'nonprofit' ? '#16a34a' : '#475569',
                                         fontSize: '0.75rem',
                                         fontWeight: '700',
                                         padding: '4px 10px',
