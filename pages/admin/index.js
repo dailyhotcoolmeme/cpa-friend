@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import {
-  Lock, Save, Trash2, Briefcase, Plus, X, Image as ImageIcon, Users, Info
+  Lock, Save, Trash2, Briefcase, Plus, X, Image as ImageIcon, Users, Info, Upload, Loader2
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -18,6 +18,7 @@ export default function AdminHome() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [inputPw, setInputPw] = useState('');
   const [activeTab, setActiveTab] = useState('team');
+  const [isUploading, setIsUploading] = useState(false);
 
   // State for different sections
   const [staffs, setStaffs] = useState([]);
@@ -43,6 +44,38 @@ export default function AdminHome() {
     setPosts(p || []);
   }
 
+  const handleFileUpload = async (event, type, id) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `uploads/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+      const publicUrl = data.publicUrl;
+
+      if (type === 'staff') {
+        setStaffs(staffs.map(s => s.id === id ? { ...s, photo_url: publicUrl } : s));
+      } else if (type === 'post') {
+        setEditingPost({ ...editingPost, thumbnail: publicUrl });
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('이미지 업로드 중 오류가 발생했습니다. (버켓이 생성되어 있는지 확인해주세요)');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const saveTeam = async () => {
     try {
       for (const person of staffs) {
@@ -59,7 +92,7 @@ export default function AdminHome() {
           await supabase.from('staff').update(staffData).eq('id', person.id);
         }
       }
-      alert('전문가 정보가 저장되었습니다.');
+      alert('운영자 정보가 저장되었습니다.');
       loadAllData();
     } catch (err) { console.error(err); alert('저장 중 오류 발생'); }
   };
@@ -148,12 +181,24 @@ export default function AdminHome() {
                     <div style={{ width: '120px', height: '140px', backgroundColor: '#f8fafc', borderRadius: '12px', overflow: 'hidden', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {person.photo_url ? <img src={person.photo_url} alt={person.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={32} color="#94a3b8" />}
                     </div>
-                    <input
-                      placeholder="이미지 URL"
-                      value={person.photo_url || ''}
-                      onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, photo_url: e.target.value } : s))}
-                      style={{ marginTop: '8px', width: '100%', fontSize: '0.75rem', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '4px' }}
-                    />
+                    <label style={{
+                      marginTop: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      padding: '6px',
+                      backgroundColor: '#f1f5f9',
+                      borderRadius: '6px',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      color: '#475569'
+                    }}>
+                      {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                      사진 업로드
+                      <input type="file" accept="image/*" hidden onChange={(e) => handleFileUpload(e, 'staff', person.id)} disabled={isUploading} />
+                    </label>
                   </div>
                   <div>
                     <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
@@ -274,7 +319,24 @@ export default function AdminHome() {
                   </select>
                   <input placeholder="글 제목을 입력하세요" value={editingPost.title} onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })} style={{ flex: 1, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800', fontSize: '1.2rem' }} />
                 </div>
-                <input placeholder="썸네일 이미지 URL (선택사항)" value={editingPost.thumbnail || ''} onChange={(e) => setEditingPost({ ...editingPost, thumbnail: e.target.value })} style={{ padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input placeholder="썸네일 이미지 URL" value={editingPost.thumbnail || ''} onChange={(e) => setEditingPost({ ...editingPost, thumbnail: e.target.value })} style={{ flex: 1, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                  <label style={{
+                    padding: '12px 20px',
+                    backgroundColor: '#eff6ff',
+                    color: '#2563eb',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '700',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    {isUploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+                    업로드
+                    <input type="file" accept="image/*" hidden onChange={(e) => handleFileUpload(e, 'post')} disabled={isUploading} />
+                  </label>
+                </div>
                 <textarea placeholder="요약 설명 (목록에서 보여집니다)" value={editingPost.summary || ''} onChange={(e) => setEditingPost({ ...editingPost, summary: e.target.value })} style={{ padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', minHeight: '80px' }} />
                 <div style={{ height: '500px', marginBottom: '50px' }}>
                   <ReactQuill
@@ -309,6 +371,13 @@ export default function AdminHome() {
         .ql-container { font-size: 1.1rem; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
         .ql-toolbar { border-top-left-radius: 8px; border-top-right-radius: 8px; background-color: #f8fafc; }
         .ql-editor { min-height: 300px; }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
       `}</style>
     </div>
   );

@@ -70,7 +70,7 @@ export default function Team() {
                 <span style={{ fontWeight: '700', fontSize: '1rem', color: '#1e40af' }}>주요 약력</span>
               </div>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {(Array.isArray(person.highlights) ? person.highlights : person.description?.split('\n') || []).map((item, idx) => (
+                {(Array.isArray(person.highlights) ? person.highlights : (person.description || '').split('\n')).filter(item => item && item.trim()).map((item, idx) => (
                   <li key={idx} style={{
                     display: 'flex',
                     alignItems: 'flex-start',
