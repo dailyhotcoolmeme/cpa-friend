@@ -27,10 +27,12 @@ export default function Home() {
           is second to none
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '120px' }}>
-          <button style={{
-            display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#2563eb', color: 'white',
-            padding: '14px 28px', borderRadius: '10px', border: 'none', fontWeight: '600', cursor: 'pointer'
-          }}>
+          <button
+            onClick={() => window.location.href = 'mailto:kickiki@naver.com?subject=상담 예약 신청&body=안녕하세요, 상담 예약을 신청합니다.'}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#2563eb', color: 'white',
+              padding: '14px 28px', borderRadius: '10px', border: 'none', fontWeight: '600', cursor: 'pointer'
+            }}>
             상담 예약하기 <ArrowRight size={18} />
           </button>
         </div>
