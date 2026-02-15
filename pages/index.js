@@ -10,7 +10,7 @@ export default function Home() {
         <h1 style={{
           fontSize: '2.0rem',
           fontWeight: '600',
-          marginTop: '60px',
+          marginTop: '48px',
           letterSpacing: '-0.02em',
           lineHeight: '1.4',
           display: 'block' // 한 줄에 나오게 합니다.
@@ -26,7 +26,7 @@ export default function Home() {
           Speed, Precision, and Attentiveness<br />
           is second to none
         </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '140px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '120px' }}>
           <button style={{
             display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#2563eb', color: 'white',
             padding: '14px 28px', borderRadius: '10px', border: 'none', fontWeight: '600', cursor: 'pointer'

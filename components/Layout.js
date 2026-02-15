@@ -67,7 +67,6 @@ export default function Layout({ children }) {
               <span style={{ color: '#333333ff' }}>회계사</span>
             </Link>
           </div>
-          <Link href="/admin" style={{ color: '#9ca3af' }}><LayoutDashboard size={20} /></Link>
         </div>
         <div style={{ overflowX: 'auto', display: 'flex', borderTop: '1px solid #f3f4f6', scrollbarWidth: 'none' }}>
           <ul style={{ display: 'flex', listStyle: 'none', margin: 0, padding: 0 }}>
