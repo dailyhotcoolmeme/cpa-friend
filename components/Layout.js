@@ -6,9 +6,18 @@ import {
   Shield,
   User,
   BookOpen,
+  Handshake,
   MapPin,
+  IdCard,
   MessageSquare,
   LayoutDashboard,
+  CircleUserRound,
+  UserRoundCheck,
+  SquareUserRound,
+  BookOpenCheck,
+  BookOpenText,
+  Building,
+  MessageCircleQuestionMark,
   Menu,
   History as HistoryIcon
 } from 'lucide-react';
@@ -32,18 +41,18 @@ export default function Layout({ children }) {
   const getIcon = (menu) => {
     const name = menu.name;
     const path = menu.path;
-    if (name.includes('회사') || name.includes('소개')) return <Shield size={18} />;
-    if (name.includes('회계사') || name.includes('인사')) return <User size={18} />;
-    if (name.includes('연혁') || path.includes('history')) return <HistoryIcon size={18} />;
-    if (name.includes('정보') || name.includes('광장')) return <BookOpen size={18} />;
-    if (name.includes('오시는') || name.includes('길')) return <MapPin size={18} />;
+    if (name.includes('운영자') || name.includes('소개')) return <IdCard size={18} />;
+    if (name.includes('업무') || name.includes('문의')) return <Handshake size={18} />;
+    if (name.includes('회계') || path.includes('정보')) return <BookOpenText size={18} />;
+    if (name.includes('세무') || name.includes('정보')) return <BookOpenCheck size={18} />;
+    if (name.includes('비영리') || name.includes('법인')) return <Building size={18} />;
     if (name.includes('게시판') || name.includes('상담')) return <MessageSquare size={18} />;
     return <Menu size={18} />;
   };
 
   return (
     <div style={{ backgroundColor: '#f8f8f8', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      <nav style={{ borderBottom: '0px solid #f8f8f8', position: 'sticky', top: 0, backgroundColor: '#f8f8f8', zIndex: 100 }}>
+      <nav style={{ borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, backgroundColor: '#f8f8f8', zIndex: 100 }}>
         <div style={{ padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <img
@@ -68,7 +77,7 @@ export default function Layout({ children }) {
             </Link>
           </div>
         </div>
-        <div style={{ overflowX: 'auto', display: 'flex', borderTop: '1px solid #f3f4f6', scrollbarWidth: 'none' }}>
+        <div style={{ overflowX: 'auto', display: 'flex', scrollbarWidth: 'none' }}>
           <ul style={{ display: 'flex', listStyle: 'none', margin: 0, padding: 0 }}>
             {menus.map((menu) => {
               const isActive = router.pathname === menu.path;
@@ -76,7 +85,7 @@ export default function Layout({ children }) {
                 <li key={menu.id}>
                   <Link href={menu.path} style={{
                     display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 20px',
-                    fontSize: '0.95rem', fontWeight: isActive ? '700' : '500',
+                    fontSize: '0.95rem', fontWeight: isActive ? '800' : '600',
                     color: isActive ? '#1e40af' : '#4b5563', textDecoration: 'none',
                     borderBottom: isActive ? '3px solid #1e40af' : '3px solid transparent',
                     whiteSpace: 'nowrap'
