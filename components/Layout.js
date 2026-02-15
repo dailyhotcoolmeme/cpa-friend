@@ -2,12 +2,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { 
-  Shield, 
-  User, 
-  BookOpen, 
-  MapPin, 
-  MessageSquare, 
+import {
+  Shield,
+  User,
+  BookOpen,
+  MapPin,
+  MessageSquare,
   LayoutDashboard,
   Menu,
   History as HistoryIcon
@@ -48,7 +48,7 @@ export default function Layout({ children }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Shield color="#1e40af" fill="#1e40af" size={22} />
             <Link href="/" style={{ fontSize: '1.2rem', fontWeight: '800', color: '#111827', textDecoration: 'none' }}>
-              바른 회계법인
+              회계법인 아성 김재철 회계사
             </Link>
           </div>
           <Link href="/admin" style={{ color: '#9ca3af' }}><LayoutDashboard size={20} /></Link>
@@ -81,7 +81,7 @@ export default function Layout({ children }) {
         {children}
       </main>
       <footer style={{ padding: '40px 20px', backgroundColor: '#f8fafc', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
-        <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>© 2026 바른 회계법인. All rights reserved.</p>
+        <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>© 2026 회계법인 아성 김재철 회계사. All rights reserved.</p>
       </footer>
       <style jsx global>{`
         body { margin: 0; padding: 0; }
