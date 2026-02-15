@@ -29,7 +29,7 @@ export default function InfoSquare() {
     return (
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <p style={{ fontSize: '1.1rem', color: '#4b5563' }}>유용한 회계, 세무 정보를 알려드립니다.</p>
+                <p style={{ fontSize: '0.9rem', color: '#4b5563' }}>유용한 회계, 세무 정보를 알려드립니다.</p>
             </header>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '40px', flexWrap: 'wrap' }}>

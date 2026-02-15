@@ -5,8 +5,8 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+import 'react-quill-new/dist/quill.snow.css';
 
 const CATEGORIES = [
   { id: 'accounting', name: '회계 정보' },
@@ -201,9 +201,9 @@ export default function AdminHome() {
                     </label>
                   </div>
                   <div>
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                      <input placeholder="이름" value={person.name} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, name: e.target.value } : s))} style={{ flex: 1, padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800' }} /><br />
-                      <input placeholder="역할 (예: 대표공인회계사)" value={person.position} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, position: e.target.value } : s))} style={{ flex: 1, padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#2563eb', fontWeight: '600' }} />
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
+                      <input placeholder="이름" value={person.name} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, name: e.target.value } : s))} style={{ flex: '1 1 200px', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800' }} />
+                      <input placeholder="역할 (예: 대표공인회계사)" value={person.position} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, position: e.target.value } : s))} style={{ flex: '1 1 200px', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#2563eb', fontWeight: '600' }} />
                     </div>
                     <div>
                       <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', color: '#64748b' }}>주요 약력</h4>

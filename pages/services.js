@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Mail, ArrowRight } from 'lucide-react';
+import { Mail, ArrowRight, Briefcase } from 'lucide-react';
 
 export default function Services() {
     const [services, setServices] = useState([]);
@@ -16,7 +16,7 @@ export default function Services() {
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
             <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <p style={{ fontSize: '1.1rem', color: '#4b5563' }}>필요하신 업무에 대해 <br />상세한 안내와 견적을 도와드립니다.</p>
+                <p style={{ fontSize: '0.9rem', color: '#4b5563' }}>필요하신 업무에 대해 <br />상세한 안내와 견적을 도와드립니다.</p>
             </header>
 
             <div style={{ display: 'grid', gap: '30px' }}>
@@ -28,7 +28,9 @@ export default function Services() {
                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
                         border: '1px solid #f3f4f6'
                     }}>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af', marginBottom: '20px' }}>{service.name}</h2>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e40af', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Briefcase size={24} /> {service.name}
+                        </h2>
                         <div style={{ marginBottom: '30px' }}>
                             {service.description?.map((line, idx) => (
                                 <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
@@ -38,7 +40,7 @@ export default function Services() {
                             ))}
                         </div>
                         <a
-                            href={`mailto:expert@example.com?subject=[견적문의] ${service.name}`}
+                            href={`mailto:26jckim@naver.com?subject=[견적문의] ${service.name}`}
                             style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',

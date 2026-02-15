@@ -16,7 +16,7 @@ export default function Team() {
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
       <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <p style={{ fontSize: '1.1rem', color: '#4b5563' }}>최고의 전문성을 바탕으로 <br />고객의 성공을 함께합니다.</p>
+        <p style={{ fontSize: '0.9rem', color: '#4b5563' }}>최고의 전문성을 바탕으로 <br />고객의 성공을 함께합니다.</p>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '40px' }}>

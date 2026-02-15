@@ -5,10 +5,7 @@ import { supabase } from '../lib/supabaseClient';
 import {
   Handshake,
   IdCard,
-  MessageSquare,
-  BookOpenCheck,
   BookOpenText,
-  Building,
   Menu
 } from 'lucide-react';
 
@@ -18,25 +15,27 @@ export default function Layout({ children }) {
 
   useEffect(() => {
     async function fetchMenus() {
+      // Fetch only the 3 main menus to ensure consistency
       const { data } = await supabase
         .from('site_menu')
         .select('*')
-        .eq('is_visible', true)
+        .in('path', ['/team', '/services', '/info'])
         .order('sort_order', { ascending: true });
-      setMenus(data || []);
+
+      // Ensure we have exactly these three in order if possible
+      const ordered = ['/team', '/services', '/info'].map(path =>
+        (data || []).find(m => m.path === path) || { path, name: path === '/team' ? '운영자 소개' : path === '/services' ? '업무 문의' : '정보 광장' }
+      );
+      setMenus(ordered);
     }
     fetchMenus();
   }, []);
 
   const getIcon = (menu) => {
-    const name = menu.name;
     const path = menu.path;
-    if (name.includes('운영자') || name.includes('소개')) return <IdCard size={18} />;
-    if (name.includes('업무') || name.includes('문의')) return <Handshake size={18} />;
-    if (name.includes('회계') || path.includes('정보')) return <BookOpenText size={18} />;
-    if (name.includes('세무') || name.includes('정보')) return <BookOpenCheck size={18} />;
-    if (name.includes('비영리') || name.includes('법인')) return <Building size={18} />;
-    if (name.includes('게시판') || name.includes('상담')) return <MessageSquare size={18} />;
+    if (path === '/team') return <IdCard size={18} />;
+    if (path === '/services') return <Handshake size={18} />;
+    if (path === '/info') return <BookOpenText size={18} />;
     return <Menu size={18} />;
   };
 
@@ -46,7 +45,7 @@ export default function Layout({ children }) {
         <div style={{ padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <img
-              src="/logo.png" // 이미지 경로 (예: public/logo.png)
+              src="/logo.png"
               alt="로고"
               style={{ width: '22px', height: '22px', objectFit: 'contain' }}
             />
@@ -56,7 +55,7 @@ export default function Layout({ children }) {
                 fontSize: '1.2rem',
                 fontWeight: '600',
                 textDecoration: 'none',
-                display: 'flex', // 글자들 사이의 간격을 미세하게 조정하고 싶다면 flex를 쓰면 좋습니다.
+                display: 'flex',
                 gap: '1px'
               }}
             >
@@ -67,14 +66,14 @@ export default function Layout({ children }) {
             </Link>
           </div>
         </div>
-        <div style={{ overflowX: 'auto', display: 'flex', scrollbarWidth: 'none' }}>
-          <ul style={{ display: 'flex', listStyle: 'none', margin: 0, padding: 0 }}>
+        <div style={{ overflowX: 'auto', display: 'flex' }}>
+          <ul style={{ display: 'flex', listStyle: 'none', margin: 0, padding: 0, width: '100%' }}>
             {menus.map((menu) => {
-              const isActive = router.pathname === menu.path;
+              const isActive = router.pathname === menu.path || (menu.path === '/info' && router.pathname.startsWith('/info/'));
               return (
-                <li key={menu.id}>
+                <li key={menu.path} style={{ flex: 1 }}>
                   <Link href={menu.path} style={{
-                    display: 'flex', alignItems: 'center', gap: '4px', padding: '14px 20px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '14px 10px',
                     fontSize: '0.95rem', fontWeight: isActive ? '800' : '600',
                     color: isActive ? '#1e40af' : '#4b5563', textDecoration: 'none',
                     borderBottom: isActive ? '3px solid #1e40af' : '3px solid transparent',
@@ -95,7 +94,9 @@ export default function Layout({ children }) {
         {children}
       </main>
       <footer style={{ padding: '20px 20px', backgroundColor: '#f8f8f8', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
-        <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>© 2026 회계법인 아성 김재철 회계사. All rights reserved.</p>
+        <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+          © 2026 회계법인 아성 <Link href="/admin" style={{ color: 'inherit', textDecoration: 'none', cursor: 'default' }}>김재철</Link> 회계사. All rights reserved.
+        </p>
       </footer>
       <style jsx global>{`
         body { margin: 0; padding: 0; }
