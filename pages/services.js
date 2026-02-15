@@ -16,7 +16,7 @@ export default function Services() {
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
             <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <p style={{ fontSize: '0.9rem', color: '#4b5563' }}>필요하신 업무에 대해 <br />상세한 안내와 견적을 도와드립니다.</p>
+                <p style={{ fontSize: '1.0rem', color: '#4b5563' }}>필요하신 업무에 대해 <br />상세한 안내와 견적을 도와드립니다.</p>
             </header>
 
             <div style={{ display: 'grid', gap: '30px' }}>

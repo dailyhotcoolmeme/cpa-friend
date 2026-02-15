@@ -176,9 +176,9 @@ export default function AdminHome() {
           <div style={{ display: 'grid', gap: '20px' }}>
             {staffs.map((person) => (
               <div key={person.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr auto', gap: '24px' }}>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ width: '120px', height: '140px', backgroundColor: '#f8fafc', borderRadius: '12px', overflow: 'hidden', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '20px' }}>
+                  <div style={{ width: '120px', flexShrink: 0 }}>
+                    <div style={{ width: '120px', height: '120px', backgroundColor: '#f8fafc', borderRadius: '12px', overflow: 'hidden', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {person.photo_url ? <img src={person.photo_url} alt={person.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={32} color="#94a3b8" />}
                     </div>
                     <label style={{
@@ -200,30 +200,31 @@ export default function AdminHome() {
                       <input type="file" accept="image/*" hidden onChange={(e) => handleFileUpload(e, 'staff', person.id)} disabled={isUploading} />
                     </label>
                   </div>
-                  <div>
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' }}>
-                      <input placeholder="이름" value={person.name} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, name: e.target.value } : s))} style={{ flex: '1 1 200px', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800' }} />
-                      <input placeholder="역할 (예: 대표공인회계사)" value={person.position} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, position: e.target.value } : s))} style={{ flex: '1 1 200px', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#2563eb', fontWeight: '600' }} />
-                    </div>
-                    <div>
-                      <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', color: '#64748b' }}>주요 약력</h4>
-                      {person.highlights?.map((h, hIdx) => (
-                        <div key={hIdx} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                          <input value={h} onChange={(e) => {
-                            const newHighlights = [...person.highlights];
-                            newHighlights[hIdx] = e.target.value;
-                            setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: newHighlights } : s));
-                          }} style={{ flex: 1, padding: '8px', border: '1px solid #f1f5f9', borderRadius: '6px', fontSize: '0.9rem' }} />
-                          <button onClick={() => {
-                            const newHighlights = person.highlights.filter((_, i) => i !== hIdx);
-                            setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: newHighlights } : s));
-                          }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }}><Trash2 size={16} /></button>
-                        </div>
-                      ))}
-                      <button onClick={() => setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: [...(s.highlights || []), ''] } : s))} style={{ border: 'none', background: 'none', color: '#2563eb', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer', padding: 0 }}>+ 행 추가</button>
-                    </div>
+                  <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <input placeholder="이름" value={person.name} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, name: e.target.value } : s))} style={{ width: '100%', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800' }} />
+                    <input placeholder="역할 (예: 대표공인회계사)" value={person.position} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, position: e.target.value } : s))} style={{ width: '100%', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#2563eb', fontWeight: '600' }} />
                   </div>
-                  <button onClick={() => deleteItem('staff', person.id)} style={{ alignSelf: 'start', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                  <button onClick={() => deleteItem('staff', person.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '5px' }}><X size={24} /></button>
+                </div>
+
+                <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '20px' }}>
+                  <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', color: '#64748b' }}>주요 약력</h4>
+                  <div style={{ display: 'grid', gap: '8px' }}>
+                    {person.highlights?.map((h, hIdx) => (
+                      <div key={hIdx} style={{ display: 'flex', gap: '8px' }}>
+                        <input value={h} onChange={(e) => {
+                          const newHighlights = [...person.highlights];
+                          newHighlights[hIdx] = e.target.value;
+                          setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: newHighlights } : s));
+                        }} style={{ flex: 1, padding: '8px', border: '1px solid #f1f5f9', borderRadius: '6px', fontSize: '0.9rem' }} />
+                        <button onClick={() => {
+                          const newHighlights = person.highlights.filter((_, i) => i !== hIdx);
+                          setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: newHighlights } : s));
+                        }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }}><Trash2 size={16} /></button>
+                      </div>
+                    ))}
+                    <button onClick={() => setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: [...(s.highlights || []), ''] } : s))} style={{ width: 'fit-content', border: 'none', background: 'none', color: '#2563eb', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer', padding: 0 }}>+ 행 추가</button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -306,21 +307,21 @@ export default function AdminHome() {
               </div>
             </>
           ) : (
-            <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '30px' }}>
+            <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '30px', width: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
               <button onClick={() => setEditingPost(null)} style={{ marginBottom: '20px', border: 'none', background: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>← 목록으로 돌아가기</button>
-              <div style={{ display: 'grid', gap: '20px' }}>
-                <div style={{ display: 'flex', gap: '15px' }}>
+              <div style={{ display: 'grid', gap: '20px', maxWidth: '100%' }}>
+                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
                   <select
                     value={editingPost.category}
                     onChange={(e) => setEditingPost({ ...editingPost, category: e.target.value })}
-                    style={{ padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '600' }}
+                    style={{ padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '600', flex: '0 0 auto' }}
                   >
                     {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
-                  <input placeholder="글 제목을 입력하세요" value={editingPost.title} onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })} style={{ flex: 1, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800', fontSize: '1.2rem' }} />
+                  <input placeholder="글 제목을 입력하세요" value={editingPost.title} onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })} style={{ flex: 1, minWidth: '200px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800', fontSize: '1.2rem' }} />
                 </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input placeholder="썸네일 이미지 URL" value={editingPost.thumbnail || ''} onChange={(e) => setEditingPost({ ...editingPost, thumbnail: e.target.value })} style={{ flex: 1, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input placeholder="썸네일 이미지 URL" value={editingPost.thumbnail || ''} onChange={(e) => setEditingPost({ ...editingPost, thumbnail: e.target.value })} style={{ flex: 1, minWidth: '200px', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
                   <label style={{
                     padding: '12px 20px',
                     backgroundColor: '#eff6ff',

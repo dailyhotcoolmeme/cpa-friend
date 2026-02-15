@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Calendar, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronRight, Search } from 'lucide-react';
 import Link from 'next/link';
 
 const CATEGORIES = [
@@ -13,6 +13,7 @@ const CATEGORIES = [
 export default function InfoSquare() {
     const [posts, setPosts] = useState([]);
     const [activeCategory, setActiveCategory] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         async function fetchPosts() {
@@ -26,28 +27,46 @@ export default function InfoSquare() {
         fetchPosts();
     }, [activeCategory]);
 
+    const filteredPosts = posts.filter(post =>
+        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (post.summary && post.summary.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        post.content.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <p style={{ fontSize: '0.9rem', color: '#4b5563' }}>유용한 회계, 세무 정보를 알려드립니다.</p>
+                <p style={{ fontSize: '1.0rem', color: '#4b5563' }}>유용한 회계, 세무 정보를 알려드립니다.</p>
             </header>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '40px', flexWrap: 'wrap' }}>
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '8px',
+                marginBottom: '30px'
+            }}>
                 {CATEGORIES.map((cat) => (
                     <button
                         key={cat.id}
                         onClick={() => setActiveCategory(cat.id)}
                         style={{
-                            padding: '10px 24px',
-                            borderRadius: '50px',
+                            padding: '12px 4px',
+                            borderRadius: '12px',
                             border: 'none',
                             backgroundColor: activeCategory === cat.id ? '#1e40af' : '#fff',
                             color: activeCategory === cat.id ? '#fff' : '#64748b',
-                            fontWeight: '600',
+                            fontWeight: '700',
+                            fontSize: '0.85rem',
                             cursor: 'pointer',
                             boxShadow: activeCategory === cat.id ? '0 4px 12px rgba(30, 64, 175, 0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
                             transition: 'all 0.2s',
-                            border: activeCategory === cat.id ? '1px solid #1e40af' : '1px solid #e2e8f0'
+                            border: activeCategory === cat.id ? '1px solid #1e40af' : '1px solid #e2e8f0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            textAlign: 'center',
+                            lineHeight: '1.2',
+                            wordBreak: 'keep-all'
                         }}
                     >
                         {cat.name}
@@ -55,8 +74,30 @@ export default function InfoSquare() {
                 ))}
             </div>
 
+            <div style={{ marginBottom: '40px', position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
+                    <Search size={20} />
+                </div>
+                <input
+                    type="text"
+                    placeholder="검색어를 입력하세요..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                        width: '100%',
+                        padding: '15px 15px 15px 45px',
+                        borderRadius: '16px',
+                        border: '1px solid #e2e8f0',
+                        fontSize: '1rem',
+                        outline: 'none',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                        boxSizing: 'border-box'
+                    }}
+                />
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
-                {posts.map((post) => (
+                {filteredPosts.map((post) => (
                     <Link
                         key={post.id}
                         href={`/info/${post.id}`}
@@ -127,9 +168,9 @@ export default function InfoSquare() {
                 ))}
             </div>
 
-            {posts.length === 0 && (
+            {filteredPosts.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '100px 0', color: '#94a3b8' }}>
-                    등록된 글이 아직 없습니다.
+                    검색 결과가 없거나 등록된 글이 없습니다.
                 </div>
             )}
         </div>
