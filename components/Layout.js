@@ -67,7 +67,7 @@ export default function Layout({ children }) {
                 fontWeight: '600',
                 textDecoration: 'none',
                 display: 'flex', // 글자들 사이의 간격을 미세하게 조정하고 싶다면 flex를 쓰면 좋습니다.
-                gap: '2px'
+                gap: '1px'
               }}
             >
               <span style={{ color: '#333333ff' }}>회계법인</span>
@@ -84,7 +84,7 @@ export default function Layout({ children }) {
               return (
                 <li key={menu.id}>
                   <Link href={menu.path} style={{
-                    display: 'flex', alignItems: 'center', gap: '8px', padding: '14px 20px',
+                    display: 'flex', alignItems: 'center', gap: '4px', padding: '14px 20px',
                     fontSize: '0.95rem', fontWeight: isActive ? '800' : '600',
                     color: isActive ? '#1e40af' : '#4b5563', textDecoration: 'none',
                     borderBottom: isActive ? '3px solid #1e40af' : '3px solid transparent',

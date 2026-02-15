@@ -1,14 +1,30 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Lock, Save, Trash2, Briefcase, Calendar, Settings, List, Eye, EyeOff } from 'lucide-react';
+import {
+  Lock, Save, Trash2, Briefcase, Calendar, Settings, List,
+  Eye, EyeOff, Users, Info, MessageSquare, Plus, X, Image as ImageIcon
+} from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
+
+const CATEGORIES = [
+  { id: 'accounting', name: '회계 정보' },
+  { id: 'tax', name: '세무 정보' },
+  { id: 'nonprofit', name: '비영리 법인' }
+];
 
 export default function AdminHome() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [inputPw, setInputPw] = useState('');
-  const [businessAreas, setBusinessAreas] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [design, setDesign] = useState({});
-  const [siteMenus, setSiteMenus] = useState([]);
+  const [activeTab, setActiveTab] = useState('team');
+
+  // State for different sections
+  const [staffs, setStaffs] = useState([]);
+  const [services, setServices] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [editingPost, setEditingPost] = useState(null);
 
   async function checkPassword() {
     const { data } = await supabase.from('admin_config').select('value').eq('key', 'admin_password').single();
@@ -19,219 +35,283 @@ export default function AdminHome() {
   }
 
   async function loadAllData() {
-    const { data: b } = await supabase.from('business_areas').select('*').order('sort_order');
-    const { data: h } = await supabase.from('history').select('*').order('event_date', { ascending: false });
-    const { data: d } = await supabase.from('site_design').select('*');
-    const { data: m } = await supabase.from('site_menu').select('*').order('sort_order');
-    
-    setBusinessAreas(b || []);
-    setHistory(h || []);
-    setSiteMenus(m || []);
-    
-    const designObj = {};
-    d?.forEach(item => { designObj[item.key] = item.value; });
-    setDesign(designObj);
+    const { data: s } = await supabase.from('staff').select('*').order('sort_order');
+    const { data: sv } = await supabase.from('services').select('*').order('sort_order');
+    const { data: p } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+
+    setStaffs(s || []);
+    setServices(sv || []);
+    setPosts(p || []);
   }
 
-  const saveAllChanges = async () => {
+  const saveTeam = async () => {
     try {
-      // 1. 메뉴(site_menu) 저장 - path 제외
-      for (const m of siteMenus) {
-        const menuData = { name: m.name, is_visible: m.is_visible, sort_order: m.sort_order };
-        if (typeof m.id === 'number' && m.id > 1000000000000) {
-          await supabase.from('site_menu').insert(menuData);
+      for (const person of staffs) {
+        const staffData = {
+          name: person.name,
+          position: person.position,
+          photo_url: person.photo_url,
+          highlights: person.highlights,
+          sort_order: person.sort_order
+        };
+        if (person.id > 1000000000000) {
+          await supabase.from('staff').insert(staffData);
         } else {
-          await supabase.from('site_menu').update(menuData).eq('id', m.id);
+          await supabase.from('staff').update(staffData).eq('id', person.id);
         }
       }
-
-      for (const area of businessAreas) {
-        if (typeof area.id === 'number' && area.id > 1000000000000) {
-           await supabase.from('business_areas').insert({ title: area.title, content: area.content });
-        } else {
-           await supabase.from('business_areas').update({ title: area.title, content: area.content }).eq('id', area.id);
-        }
-      }
-      for (const h of history) {
-        if (typeof h.id === 'number' && h.id > 1000000000000) {
-           await supabase.from('history').insert({ event_date: h.event_date, title: h.title, description: h.description });
-        } else {
-           await supabase.from('history').update({ event_date: h.event_date, title: h.title, description: h.description }).eq('id', h.id);
-        }
-      }
-      const designEntries = Object.entries(design).map(([key, value]) => ({ key, value }));
-      await supabase.from('site_design').upsert(designEntries);
-
-      alert('모든 설정이 성공적으로 저장되었습니다!');
+      alert('전문가 정보가 저장되었습니다.');
       loadAllData();
-    } catch (err) {
-      console.error(err);
-      alert('저장 중 오류가 발생했습니다.');
-    }
+    } catch (err) { console.error(err); alert('저장 중 오류 발생'); }
   };
 
-  const deleteMenu = async (id) => {
-    if (confirm('이 메뉴를 영구 삭제하시겠습니까?')) {
-      if (typeof id !== 'number' || id < 1000000000000) {
-        await supabase.from('site_menu').delete().eq('id', id);
+  const saveServices = async () => {
+    try {
+      for (const service of services) {
+        const serviceData = {
+          name: service.name,
+          description: service.description,
+          sort_order: service.sort_order
+        };
+        if (service.id > 1000000000000) {
+          await supabase.from('services').insert(serviceData);
+        } else {
+          await supabase.from('services').update(serviceData).eq('id', service.id);
+        }
       }
-      setSiteMenus(siteMenus.filter(m => m.id !== id));
-    }
+      alert('업무 정보가 저장되었습니다.');
+      loadAllData();
+    } catch (err) { console.error(err); alert('저장 중 오류 발생'); }
   };
 
-  const renderDesignSetting = (label, k, type = "number", fallbackValue = "") => {
-    const currentValue = design[k] || fallbackValue || '';
-    const isColor = type === 'color';
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-        <span style={{ fontSize: '0.85rem', width: '130px', color: '#475569' }}>{label}</span>
-        <input 
-          type={type} 
-          value={currentValue} 
-          onChange={(e) => setDesign({ ...design, [k]: e.target.value })} 
-          style={{ 
-            width: type === "number" ? '60px' : isColor ? '44px' : '65px', 
-            height: isColor ? '30px' : 'auto',
-            padding: isColor ? '0' : '4px', 
-            border: '1px solid #cbd5e1', 
-            borderRadius: '4px' 
-          }}
-        />
-        {type === "number" && <span style={{ fontSize: '0.75rem' }}>pt</span>}
-      </div>
-    );
+  const savePost = async () => {
+    if (!editingPost.title || !editingPost.content) {
+      alert('제목과 내용을 입력해주세요.');
+      return;
+    }
+    try {
+      if (editingPost.id) {
+        await supabase.from('posts').update(editingPost).eq('id', editingPost.id);
+      } else {
+        await supabase.from('posts').insert(editingPost);
+      }
+      alert('글이 저장되었습니다.');
+      setEditingPost(null);
+      loadAllData();
+    } catch (err) { console.error(err); alert('저장 중 오류 발생'); }
+  };
+
+  const deleteItem = async (table, id) => {
+    if (confirm('정말 삭제하시겠습니까?')) {
+      if (id < 1000000000000) {
+        await supabase.from(table).delete().eq('id', id);
+      }
+      if (table === 'staff') setStaffs(staffs.filter(s => s.id !== id));
+      if (table === 'services') setServices(services.filter(s => s.id !== id));
+      if (table === 'posts') setPosts(posts.filter(p => p.id !== id));
+    }
   };
 
   if (!isAuthorized) {
     return (
       <div style={{ height: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
         <Lock size={48} color="#1e40af" />
-        <h2>관리자 로그인</h2>
-        <input type="password" value={inputPw} onChange={(e) => setInputPw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && checkPassword()} style={{ padding: '12px', border: '1px solid #ddd', borderRadius: '8px', textAlign: 'center' }} />
-        <button onClick={checkPassword} style={{ padding: '10px 30px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>인증하기</button>
+        <h2 style={{ fontWeight: '800' }}>관리자 로그인</h2>
+        <input type="password" value={inputPw} onChange={(e) => setInputPw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && checkPassword()} style={{ padding: '15px', border: '1px solid #e2e8f0', borderRadius: '12px', textAlign: 'center', width: '250px', fontSize: '1.2rem' }} placeholder="비밀번호 입력" />
+        <button onClick={checkPassword} style={{ padding: '12px 60px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', fontSize: '1.1rem' }}>인증하기</button>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 20px 150px', backgroundColor: '#fdfdfd' }}>
-      
-      {/* 메뉴 관리 섹션 - path 제거됨 */}
-      <section style={{ marginBottom: '50px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><List size={20} /> 홈페이지 메뉴 구성</h3>
-          <button onClick={() => setSiteMenus([...siteMenus, { id: Date.now(), name: '', is_visible: true, sort_order: siteMenus.length + 1 }])} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer', backgroundColor: '#fff' }}>+ 메뉴 추가</button>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px 100px' }}>
+      <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#111827' }}>관리자 시스템</h1>
+        <div style={{ display: 'flex', gap: '8px', backgroundColor: '#f1f5f9', padding: '4px', borderRadius: '12px' }}>
+          <button onClick={() => setActiveTab('team')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'team' ? '#fff' : 'transparent', color: activeTab === 'team' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'team' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>전문가 관리</button>
+          <button onClick={() => setActiveTab('services')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'services' ? '#fff' : 'transparent', color: activeTab === 'services' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'services' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>업무 관리</button>
+          <button onClick={() => setActiveTab('info')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'info' ? '#fff' : 'transparent', color: activeTab === 'info' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'info' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>정보 광장 관리</button>
         </div>
-        <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px' }}>
-          {siteMenus.map((menu) => (
-            <div key={menu.id} style={{ display: 'flex', gap: '10px', marginBottom: '12px', alignItems: 'center', opacity: menu.is_visible ? 1 : 0.5 }}>
-              <button 
-                onClick={() => setSiteMenus(siteMenus.map(m => m.id === menu.id ? {...m, is_visible: !m.is_visible} : m))}
-                style={{ border: 'none', background: 'none', cursor: 'pointer', color: menu.is_visible ? '#2563eb' : '#94a3b8' }}
-              >
-                {menu.is_visible ? <Eye size={20} /> : <EyeOff size={20} />}
-              </button>
-              <input placeholder="메뉴 이름" value={menu.name} onChange={(e) => setSiteMenus(siteMenus.map(m => m.id === menu.id ? {...m, name: e.target.value} : m))} style={{ flex: 1, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
-              <button onClick={() => deleteMenu(menu.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
-            </div>
-          ))}
-        </div>
-      </section>
+      </header>
 
-      <hr style={{ margin: '40px 0', border: '0', borderTop: '1px solid #e2e8f0' }} />
+      {/* 1. 전문가 관리 */}
+      {activeTab === 'team' && (
+        <section>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}><Users /> 전문가 목록</h2>
+            <button onClick={() => setStaffs([...staffs, { id: Date.now(), name: '', position: '', photo_url: '', highlights: [''], sort_order: staffs.length + 1 }])} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 전문가 추가</button>
+          </div>
 
-      <section style={{ marginBottom: '50px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Briefcase size={20} /> 사업 영역 내용 관리</h3>
-          <button onClick={() => setBusinessAreas([...businessAreas, { id: Date.now(), title: '새 영역', content: ['내용 작성'] }])} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer', backgroundColor: '#fff' }}>+ 박스 추가</button>
-        </div>
-        {businessAreas.map(area => (
-          <div key={area.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', marginBottom: '15px' }}>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-              <input value={area.title} onChange={(e) => setBusinessAreas(businessAreas.map(a => a.id === area.id ? {...a, title: e.target.value} : a))} style={{ flex: 1, fontWeight: 'bold', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px' }} />
-              <button onClick={() => setBusinessAreas(businessAreas.filter(a => a.id !== area.id))} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
-            </div>
-            {area.content?.map((line, idx) => (
-              <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                <input style={{ flex: 1, padding: '6px', border: '1px solid #e2e8f0', borderRadius: '4px' }} value={line} onChange={(e) => {
-                  const newContent = [...area.content]; newContent[idx] = e.target.value;
-                  setBusinessAreas(businessAreas.map(a => a.id === area.id ? {...a, content: newContent} : a));
-                }} />
-                <button onClick={() => {
-                  const newContent = area.content.filter((_, i) => i !== idx);
-                  setBusinessAreas(businessAreas.map(a => a.id === area.id ? {...a, content: newContent} : a));
-                }} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><Trash2 size={16} color="#94a3b8" /></button>
+          <div style={{ display: 'grid', gap: '20px' }}>
+            {staffs.map((person, idx) => (
+              <div key={person.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr auto', gap: '24px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ width: '120px', height: '140px', backgroundColor: '#f8fafc', borderRadius: '12px', overflow: 'hidden', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {person.photo_url ? <img src={person.photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={32} color="#94a3b8" />}
+                    </div>
+                    <input
+                      placeholder="이미지 URL"
+                      value={person.photo_url || ''}
+                      onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, photo_url: e.target.value } : s))}
+                      style={{ marginTop: '8px', width: '100%', fontSize: '0.75rem', padding: '4px', border: '1px solid #e2e8f0', borderRadius: '4px' }}
+                    />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                      <input placeholder="이름" value={person.name} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, name: e.target.value } : s))} style={{ flex: 1, padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800' }} />
+                      <input placeholder="역할 (예: 대표공인회계사)" value={person.position} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, position: e.target.value } : s))} style={{ flex: 1, padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#2563eb', fontWeight: '600' }} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', color: '#64748b' }}>주요 약력</h4>
+                      {person.highlights?.map((h, hIdx) => (
+                        <div key={hIdx} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                          <input value={h} onChange={(e) => {
+                            const newHighlights = [...person.highlights];
+                            newHighlights[hIdx] = e.target.value;
+                            setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: newHighlights } : s));
+                          }} style={{ flex: 1, padding: '8px', border: '1px solid #f1f5f9', borderRadius: '6px', fontSize: '0.9rem' }} />
+                          <button onClick={() => {
+                            const newHighlights = person.highlights.filter((_, i) => i !== hIdx);
+                            setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: newHighlights } : s));
+                          }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }}><Trash2 size={16} /></button>
+                        </div>
+                      ))}
+                      <button onClick={() => setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: [...(s.highlights || []), ''] } : s))} style={{ border: 'none', background: 'none', color: '#2563eb', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer', padding: 0 }}>+ 행 추가</button>
+                    </div>
+                  </div>
+                  <button onClick={() => deleteItem('staff', person.id)} style={{ alignSelf: 'start', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                </div>
               </div>
             ))}
-            <button onClick={() => setBusinessAreas(businessAreas.map(a => a.id === area.id ? {...a, content: [...a.content, '']} : a))} style={{ fontSize: '0.8rem', color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>+ 줄 추가</button>
           </div>
-        ))}
-        
-        <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed #cbd5e1', marginTop: '20px' }}>
-          <h4 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#64748b' }}><Settings size={16} /> 사업영역 스타일 설정</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-            <div>
-              {renderDesignSetting("메인 헤드라인 크기", "biz_head_size")}
-              {renderDesignSetting("메인 헤드라인 색상", "biz_head_color", "color", "#111827")}
-            </div>
-            <div>
-              {renderDesignSetting("박스 제목 크기", "biz_title_size")}
-              {renderDesignSetting("박스 제목 색상", "biz_title_color", "color", "#1e40af")}
-            </div>
-            <div>
-              {renderDesignSetting("상세 내용 크기", "biz_content_size")}
-              {renderDesignSetting("상세 내용 색상", "biz_content_color", "color", "#4b5563")}
-            </div>
+          <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center' }}>
+            <button onClick={saveTeam} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 60px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(30, 64, 175, 0.3)', cursor: 'pointer' }}>
+              <Save size={22} /> 전문가 설정 저장하기
+            </button>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <hr style={{ margin: '60px 0', border: '0', borderTop: '1px solid #e2e8f0' }} />
-
-      <section style={{ marginBottom: '50px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Calendar size={20} /> 회사 연혁 내용 관리</h3>
-          <button onClick={() => setHistory([{ id: Date.now(), event_date: '2026.01', title: '새 연혁', description: '내용' }, ...history])} style={{ padding: '8px 15px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer', backgroundColor: '#fff' }}>+ 연혁 추가</button>
-        </div>
-        {history.map(h => (
-          <div key={h.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '15px', marginBottom: '15px' }}>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <input style={{ width: '90px', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', textAlign: 'center', flexShrink: 0 }} value={h.event_date} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, event_date: e.target.value} : item))} />
-              <input style={{ flex: 1, minWidth: '160px', fontWeight: 'bold', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px' }} value={h.title} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, title: e.target.value} : item))} />
-              <button onClick={() => setHistory(history.filter(item => item.id !== h.id))} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}><Trash2 size={20} /></button>
-            </div>
-            <textarea style={{ width: '100%', padding: '8px', fontSize: '0.9rem', border: '1px solid #e2e8f0', borderRadius: '4px' }} value={h.description || ''} onChange={(e) => setHistory(history.map(item => item.id === h.id ? {...item, description: e.target.value} : item))} />
+      {/* 2. 업무 관리 */}
+      {activeTab === 'services' && (
+        <section>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}><Briefcase /> 업무 목록</h2>
+            <button onClick={() => setServices([...services, { id: Date.now(), name: '', description: [''], sort_order: services.length + 1 }])} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 업무 추가</button>
           </div>
-        ))}
-        
-        <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed #cbd5e1', marginTop: '20px' }}>
-          <h4 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', color: '#64748b' }}><Settings size={16} /> 회사 연혁 스타일 설정</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-            <div>
-              {renderDesignSetting("헤드라인 크기", "hist_head_size")}
-              {renderDesignSetting("헤드라인 색상", "hist_head_color", "color", "#111827")}
-            </div>
-            <div>
-              {renderDesignSetting("날짜 크기", "hist_date_size")}
-              {renderDesignSetting("날짜 색상", "hist_date_color", "color", "#2563eb")}
-            </div>
-            <div>
-              {renderDesignSetting("제목 크기", "hist_title_size")}
-              {renderDesignSetting("제목 색상", "hist_title_color", "color", "#111827")}
-            </div>
-            <div>
-              {renderDesignSetting("내용 크기", "hist_desc_size")}
-              {renderDesignSetting("내용 색상", "hist_desc_color", "color", "#6b7280")}
-            </div>
+          <div style={{ display: 'grid', gap: '20px' }}>
+            {services.map((service) => (
+              <div key={service.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                  <input placeholder="업무명" value={service.name} onChange={(e) => setServices(services.map(s => s.id === service.id ? { ...s, name: e.target.value } : s))} style={{ flex: 1, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800', fontSize: '1.1rem' }} />
+                  <button onClick={() => deleteItem('services', service.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', marginLeft: '10px' }}><Trash2 size={24} /></button>
+                </div>
+                <div style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '12px' }}>
+                  <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', color: '#64748b' }}>업무 상세 설명</h4>
+                  {service.description?.map((line, lIdx) => (
+                    <div key={lIdx} style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
+                      <input value={line} onChange={(e) => {
+                        const newDesc = [...service.description];
+                        newDesc[lIdx] = e.target.value;
+                        setServices(services.map(s => s.id === service.id ? { ...s, description: newDesc } : s));
+                      }} style={{ flex: 1, padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.95rem' }} />
+                      <button onClick={() => {
+                        const newDesc = service.description.filter((_, i) => i !== lIdx);
+                        setServices(services.map(s => s.id === service.id ? { ...s, description: newDesc } : s));
+                      }} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }}><Trash2 size={18} /></button>
+                    </div>
+                  ))}
+                  <button onClick={() => setServices(services.map(s => s.id === service.id ? { ...s, description: [...(s.description || []), ''] } : s))} style={{ border: 'none', background: 'none', color: '#2563eb', fontSize: '0.9rem', fontWeight: '700', cursor: 'pointer', padding: 0 }}>+ 설명 행 추가</button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </section>
+          <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center' }}>
+            <button onClick={saveServices} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 60px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(30, 64, 175, 0.3)', cursor: 'pointer' }}>
+              <Save size={22} /> 업무 설정 저장하기
+            </button>
+          </div>
+        </section>
+      )}
 
-      <div style={{ position: 'fixed', bottom: '0', left: '0', right: '0', backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', padding: '20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'center', zIndex: 1000 }}>
-        <button onClick={saveAllChanges} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 60px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(30, 64, 175, 0.3)', cursor: 'pointer' }}>
-          <Save size={22} /> 설정 내용 한 번에 저장하기
-        </button>
-      </div>
+      {/* 3. 정보 광장 관리 */}
+      {activeTab === 'info' && (
+        <section>
+          {!editingPost ? (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}><Info /> 정보 광장 게시글</h2>
+                <button onClick={() => setEditingPost({ title: '', category: 'accounting', content: '', summary: '', thumbnail: '' })} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 새 글 쓰기</button>
+              </div>
+              <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden' }}>
+                {posts.map((post) => (
+                  <div key={post.id} style={{ padding: '20px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#2563eb', backgroundColor: '#eff6ff', padding: '4px 8px', borderRadius: '4px', marginRight: '10px' }}>
+                        {CATEGORIES.find(c => c.id === post.category)?.name}
+                      </span>
+                      <span style={{ fontWeight: '700', color: '#111827' }}>{post.title}</span>
+                      <span style={{ fontSize: '0.85rem', color: '#94a3b8', marginLeft: '15px' }}>{new Date(post.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button onClick={() => setEditingPost(post)} style={{ padding: '6px 15px', borderRadius: '6px', border: '1px solid #e2e8f0', cursor: 'pointer', backgroundColor: '#fff' }}>수정</button>
+                      <button onClick={() => deleteItem('posts', post.id)} style={{ padding: '6px 15px', borderRadius: '6px', border: 'none', cursor: 'pointer', backgroundColor: '#fef2f2', color: '#ef4444' }}>삭제</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '30px' }}>
+              <button onClick={() => setEditingPost(null)} style={{ marginBottom: '20px', border: 'none', background: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>← 목록으로 돌아가기</button>
+              <div style={{ display: 'grid', gap: '20px' }}>
+                <div style={{ display: 'flex', gap: '15px' }}>
+                  <select
+                    value={editingPost.category}
+                    onChange={(e) => setEditingPost({ ...editingPost, category: e.target.value })}
+                    style={{ padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '600' }}
+                  >
+                    {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                  <input placeholder="글 제목을 입력하세요" value={editingPost.title} onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })} style={{ flex: 1, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800', fontSize: '1.2rem' }} />
+                </div>
+                <input placeholder="썸네일 이미지 URL (선택사항)" value={editingPost.thumbnail || ''} onChange={(e) => setEditingPost({ ...editingPost, thumbnail: e.target.value })} style={{ padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px' }} />
+                <textarea placeholder="요약 설명 (목록에서 보여집니다)" value={editingPost.summary || ''} onChange={(e) => setEditingPost({ ...editingPost, summary: e.target.value })} style={{ padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', minHeight: '80px' }} />
+                <div style={{ height: '500px', marginBottom: '50px' }}>
+                  <ReactQuill
+                    theme="snow"
+                    value={editingPost.content}
+                    onChange={(content) => setEditingPost({ ...editingPost, content })}
+                    style={{ height: '400px' }}
+                    modules={{
+                      toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+                        ['link', 'image'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['clean']
+                      ],
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
+                  <button onClick={() => setEditingPost(null)} style={{ padding: '15px 40px', backgroundColor: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }}>취소</button>
+                  <button onClick={savePost} style={{ padding: '15px 60px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(30, 64, 175, 0.2)' }}>게시글 저장하기</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Global CSS for Quill */}
+      <style jsx global>{`
+        .ql-container { font-size: 1.1rem; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+        .ql-toolbar { border-top-left-radius: 8px; border-top-right-radius: 8px; background-color: #f8fafc; }
+        .ql-editor { min-height: 300px; }
+      `}</style>
     </div>
   );
 }

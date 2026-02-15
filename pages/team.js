@@ -1,4 +1,4 @@
-import { UserCheck, Award } from 'lucide-react';
+import { UserCheck, Award, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
@@ -14,28 +14,78 @@ export default function Team() {
   }, []);
 
   return (
-    <div>
-      <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '40px', textAlign: 'center' }}>전문가 소개</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      <header style={{ textAlign: 'center', marginBottom: '60px' }}>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#111827', marginBottom: '16px' }}>전문가 소개</h1>
+        <p style={{ fontSize: '1.1rem', color: '#4b5563' }}>최고의 전문성을 바탕으로 고객의 성공을 함께합니다.</p>
+      </header>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '40px' }}>
         {staffs.map((person) => (
-          <div key={person.id} style={{ backgroundColor: 'white', borderRadius: '20px', padding: '30px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-              <div style={{ backgroundColor: '#eff6ff', padding: '15px', borderRadius: '50%' }}>
-                <UserCheck size={32} color="#2563eb" />
+          <div key={person.id} style={{
+            backgroundColor: 'white',
+            borderRadius: '24px',
+            overflow: 'hidden',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #f3f4f6',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div style={{ display: 'flex', gap: '24px', padding: '32px', alignItems: 'center', borderBottom: '1px solid #f8fafc' }}>
+              <div style={{
+                width: '120px',
+                height: '140px',
+                borderRadius: '16px',
+                backgroundColor: '#f1f5f9',
+                overflow: 'hidden',
+                flexShrink: 0
+              }}>
+                {person.photo_url ? (
+                  <img src={person.photo_url} alt={person.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}>
+                    <UserCheck size={48} />
+                  </div>
+                )}
               </div>
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '700', margin: 0 }}>{person.name}</h3>
-                <span style={{ color: '#2563eb', fontSize: '0.9rem', fontWeight: '600' }}>{person.position}</span>
+                <span style={{
+                  display: 'inline-block',
+                  backgroundColor: '#eff6ff',
+                  color: '#2563eb',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  padding: '4px 12px',
+                  borderRadius: '6px',
+                  marginBottom: '8px'
+                }}>
+                  {person.position}
+                </span>
+                <h3 style={{ fontSize: '1.75rem', fontWeight: '800', margin: 0, color: '#111827' }}>{person.name}</h3>
               </div>
             </div>
-            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '20px' }}>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-                <Award size={18} color="#64748b" />
-                <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>주요 약력</span>
+
+            <div style={{ padding: '32px', backgroundColor: '#fff', flexGrow: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                <Award size={20} color="#1e40af" />
+                <span style={{ fontWeight: '700', fontSize: '1rem', color: '#1e40af' }}>주요 약력</span>
               </div>
-              <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
-                {person.description}
-              </p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {(Array.isArray(person.highlights) ? person.highlights : person.description?.split('\n') || []).map((item, idx) => (
+                  <li key={idx} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                    marginBottom: '12px',
+                    fontSize: '1rem',
+                    color: '#475569',
+                    lineHeight: '1.5'
+                  }}>
+                    <CheckCircle2 size={16} color="#94a3b8" style={{ marginTop: '4px', flexShrink: 0 }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         ))}
@@ -43,3 +93,4 @@ export default function Team() {
     </div>
   );
 }
+
