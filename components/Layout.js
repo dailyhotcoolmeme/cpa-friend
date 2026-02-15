@@ -96,7 +96,7 @@ export default function Layout({ children }) {
       <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '30px 20px' }}>
         {children}
       </main>
-      <footer style={{ padding: '20px 20px', backgroundColor: '#f8f8f8', borderTop: '0px solid #e5e7eb', textAlign: 'center' }}>
+      <footer style={{ padding: '20px 20px', backgroundColor: '#f8f8f8', borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
         <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>© 2026 회계법인 아성 김재철 회계사. All rights reserved.</p>
       </footer>
       <style jsx global>{`
