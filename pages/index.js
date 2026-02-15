@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -28,7 +28,7 @@ export default function Home() {
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '120px' }}>
           <button
-            onClick={() => window.location.href = 'mailto:kickiki@naver.com?subject=상담 예약 신청&body=안녕하세요, 상담 예약을 신청합니다.'}
+            onClick={() => window.location.href = 'mailto:26jckim@naver.com?subject=상담 예약 신청&body=안녕하세요, 상담 예약을 신청합니다.'}
             style={{
               display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#2563eb', color: 'white',
               padding: '14px 28px', borderRadius: '10px', border: 'none', fontWeight: '600', cursor: 'pointer'

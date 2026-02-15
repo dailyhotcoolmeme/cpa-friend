@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Calendar, Tag, ArrowLeft } from 'lucide-react';
+import { Calendar, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 const CATEGORIES = [

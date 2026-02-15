@@ -3,23 +3,13 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import {
-  Shield,
-  User,
-  BookOpen,
   Handshake,
-  MapPin,
   IdCard,
   MessageSquare,
-  LayoutDashboard,
-  CircleUserRound,
-  UserRoundCheck,
-  SquareUserRound,
   BookOpenCheck,
   BookOpenText,
   Building,
-  MessageCircleQuestionMark,
-  Menu,
-  History as HistoryIcon
+  Menu
 } from 'lucide-react';
 
 export default function Layout({ children }) {

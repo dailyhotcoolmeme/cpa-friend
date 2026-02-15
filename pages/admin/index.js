@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import {
-  Lock, Save, Trash2, Briefcase, Calendar, Settings, List,
-  Eye, EyeOff, Users, Info, MessageSquare, Plus, X, Image as ImageIcon
+  Lock, Save, Trash2, Briefcase, Plus, X, Image as ImageIcon
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -143,12 +142,12 @@ export default function AdminHome() {
           </div>
 
           <div style={{ display: 'grid', gap: '20px' }}>
-            {staffs.map((person, idx) => (
+            {staffs.map((person) => (
               <div key={person.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr auto', gap: '24px' }}>
                   <div style={{ position: 'relative' }}>
                     <div style={{ width: '120px', height: '140px', backgroundColor: '#f8fafc', borderRadius: '12px', overflow: 'hidden', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {person.photo_url ? <img src={person.photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={32} color="#94a3b8" />}
+                      {person.photo_url ? <img src={person.photo_url} alt={person.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <ImageIcon size={32} color="#94a3b8" />}
                     </div>
                     <input
                       placeholder="이미지 URL"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Calendar, Tag, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 const CATEGORIES = [
