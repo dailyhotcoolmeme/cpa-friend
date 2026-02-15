@@ -125,20 +125,19 @@ export default function AdminHome() {
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px 100px' }}>
       <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#111827' }}>관리자 시스템</h1>
         <div style={{ display: 'flex', gap: '8px', backgroundColor: '#f1f5f9', padding: '4px', borderRadius: '12px' }}>
-          <button onClick={() => setActiveTab('team')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'team' ? '#fff' : 'transparent', color: activeTab === 'team' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'team' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>전문가 관리</button>
+          <button onClick={() => setActiveTab('team')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'team' ? '#fff' : 'transparent', color: activeTab === 'team' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'team' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>운영자 관리</button>
           <button onClick={() => setActiveTab('services')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'services' ? '#fff' : 'transparent', color: activeTab === 'services' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'services' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>업무 관리</button>
           <button onClick={() => setActiveTab('info')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'info' ? '#fff' : 'transparent', color: activeTab === 'info' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'info' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>정보 광장 관리</button>
         </div>
       </header>
 
-      {/* 1. 전문가 관리 */}
+      {/* 1. 운영자 관리 */}
       {activeTab === 'team' && (
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}><Users /> 전문가 목록</h2>
-            <button onClick={() => setStaffs([...staffs, { id: Date.now(), name: '', position: '', photo_url: '', highlights: [''], sort_order: staffs.length + 1 }])} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 전문가 추가</button>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}><Users /> 운영자 목록</h2>
+            <button onClick={() => setStaffs([...staffs, { id: Date.now(), name: '', position: '', photo_url: '', highlights: [''], sort_order: staffs.length + 1 }])} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 운영자 추가</button>
           </div>
 
           <div style={{ display: 'grid', gap: '20px' }}>
@@ -158,7 +157,7 @@ export default function AdminHome() {
                   </div>
                   <div>
                     <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                      <input placeholder="이름" value={person.name} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, name: e.target.value } : s))} style={{ flex: 1, padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800' }} />
+                      <input placeholder="이름" value={person.name} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, name: e.target.value } : s))} style={{ flex: 1, padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800' }} /><br />
                       <input placeholder="역할 (예: 대표공인회계사)" value={person.position} onChange={(e) => setStaffs(staffs.map(s => s.id === person.id ? { ...s, position: e.target.value } : s))} style={{ flex: 1, padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#2563eb', fontWeight: '600' }} />
                     </div>
                     <div>
@@ -186,7 +185,7 @@ export default function AdminHome() {
           </div>
           <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center' }}>
             <button onClick={saveTeam} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 60px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(30, 64, 175, 0.3)', cursor: 'pointer' }}>
-              <Save size={22} /> 전문가 설정 저장하기
+              <Save size={22} /> 운영자 설정 저장하기
             </button>
           </div>
         </section>
