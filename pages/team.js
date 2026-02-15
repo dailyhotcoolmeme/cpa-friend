@@ -15,12 +15,11 @@ export default function Team() {
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      <header style={{ textAlign: 'center', marginBottom: '60px' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#111827', marginBottom: '16px' }}>전문가 소개</h1>
-        <p style={{ fontSize: '1.1rem', color: '#4b5563' }}>최고의 전문성을 바탕으로 고객의 성공을 함께합니다.</p>
+      <header style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <p style={{ fontSize: '1.1rem', color: '#4b5563' }}>최고의 전문성을 바탕으로 <br />고객의 성공을 함께합니다.</p>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '40px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '40px' }}>
         {staffs.map((person) => (
           <div key={person.id} style={{
             backgroundColor: 'white',
@@ -33,8 +32,8 @@ export default function Team() {
           }}>
             <div style={{ display: 'flex', gap: '24px', padding: '32px', alignItems: 'center', borderBottom: '1px solid #f8fafc' }}>
               <div style={{
-                width: '120px',
-                height: '140px',
+                width: '80px',
+                height: '80px',
                 borderRadius: '16px',
                 backgroundColor: '#f1f5f9',
                 overflow: 'hidden',
@@ -49,6 +48,7 @@ export default function Team() {
                 )}
               </div>
               <div>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: '700', margin: '10px', color: '#111827' }}>{person.name}</h3>
                 <span style={{
                   display: 'inline-block',
                   backgroundColor: '#eff6ff',
@@ -61,7 +61,6 @@ export default function Team() {
                 }}>
                   {person.position}
                 </span>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: '800', margin: 0, color: '#111827' }}>{person.name}</h3>
               </div>
             </div>
 
