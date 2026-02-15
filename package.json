@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
+    "@tailwindcss/postcss": "^4.1.18",
     "autoprefixer": "latest",
     "dotenv": "^17.3.1",
     "lucide-react": "latest",
@@ -21,7 +22,11 @@
     "tailwindcss": "latest"
   },
   "devDependencies": {
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "eslint": "latest",
-    "eslint-config-next": "latest"
+    "eslint-config-next": "latest",
+    "typescript": "^5.9.3"
   }
 }

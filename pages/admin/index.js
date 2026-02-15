@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import {
-  Lock, Save, Trash2, Briefcase, Plus, X, Image as ImageIcon
+  Lock, Save, Trash2, Briefcase, Plus, X, Image as ImageIcon, Users, Info
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
