@@ -236,9 +236,9 @@ export default function AdminHome() {
             <button onClick={() => setStaffs([...staffs, { id: Date.now(), name: '', position: '', photo_url: '', highlights: [''], sort_order: staffs.length + 1 }])} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 운영자 추가</button>
           </div>
 
-          <div style={{ display: 'grid', gap: '20px' }}>
+          <div style={{ display: 'grid', gap: '20px', width: '100%' }}>
             {staffs.map((person) => (
-              <div key={person.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
+              <div key={person.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '20px' }}>
                   <div style={{ width: '120px', flexShrink: 0 }}>
                     <div style={{ width: '120px', height: '120px', backgroundColor: '#f8fafc', borderRadius: '12px', overflow: 'hidden', border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -279,7 +279,7 @@ export default function AdminHome() {
                           const newHighlights = [...person.highlights];
                           newHighlights[hIdx] = e.target.value;
                           setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: newHighlights } : s));
-                        }} style={{ flex: 1, padding: '8px', border: '1px solid #f1f5f9', borderRadius: '6px', fontSize: '0.9rem' }} />
+                        }} style={{ flex: 1, minWidth: 0, padding: '8px', border: '1px solid #f1f5f9', borderRadius: '6px', fontSize: '0.9rem' }} />
                         <button onClick={() => {
                           const newHighlights = person.highlights.filter((_, i) => i !== hIdx);
                           setStaffs(staffs.map(s => s.id === person.id ? { ...s, highlights: newHighlights } : s));
@@ -307,12 +307,12 @@ export default function AdminHome() {
             <h2 style={{ fontSize: '1.25rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}><Briefcase /> 업무 목록</h2>
             <button onClick={() => setServices([...services, { id: Date.now(), name: '', description: [''], sort_order: services.length + 1 }])} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 업무 추가</button>
           </div>
-          <div style={{ display: 'grid', gap: '20px' }}>
+          <div style={{ display: 'grid', gap: '20px', width: '100%' }}>
             {services.map((service) => (
-              <div key={service.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                  <input placeholder="업무명" value={service.name} onChange={(e) => setServices(services.map(s => s.id === service.id ? { ...s, name: e.target.value } : s))} style={{ flex: 1, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800', fontSize: '1.1rem' }} />
-                  <button onClick={() => deleteItem('services', service.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', marginLeft: '10px' }}><Trash2 size={24} /></button>
+              <div key={service.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', boxSizing: 'border-box' }}>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' }}>
+                  <input placeholder="업무명" value={service.name} onChange={(e) => setServices(services.map(s => s.id === service.id ? { ...s, name: e.target.value } : s))} style={{ flex: 1, minWidth: 0, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontWeight: '800', fontSize: '1.1rem' }} />
+                  <button onClick={() => deleteItem('services', service.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Trash2 size={24} /></button>
                 </div>
                 <div style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '12px' }}>
                   <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', color: '#64748b' }}>업무 상세 설명</h4>
@@ -322,7 +322,7 @@ export default function AdminHome() {
                         const newDesc = [...service.description];
                         newDesc[lIdx] = e.target.value;
                         setServices(services.map(s => s.id === service.id ? { ...s, description: newDesc } : s));
-                      }} style={{ flex: 1, padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.95rem' }} />
+                      }} style={{ flex: 1, minWidth: 0, padding: '10px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.95rem' }} />
                       <button onClick={() => {
                         const newDesc = service.description.filter((_, i) => i !== lIdx);
                         setServices(services.map(s => s.id === service.id ? { ...s, description: newDesc } : s));
