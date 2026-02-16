@@ -183,14 +183,15 @@ export default function AdminHome() {
 
           // 스토리지에서 파일 삭제
           if (imagePath) {
-            // URL 인코딩된 문자열을 디코딩 (예: %20 -> 공백)
-            const decodedPath = decodeURIComponent(imagePath);
-            console.log('Original Path:', imagePath);
-            console.log('Decoded Path:', decodedPath);
+            // 쿼리 파라미터(?t=...) 제거 및 디코딩
+            const cleanPath = decodeURIComponent(imagePath.split('?')[0]);
+
+            // 디버깅용 알림창 (배포 환경에서 경로 확인용)
+            alert('삭제 시도하는 이미지 경로: ' + cleanPath);
 
             const { error: storageError } = await supabase.storage
               .from('images')
-              .remove([decodedPath]);
+              .remove([cleanPath]);
 
             if (storageError) {
               console.error('Error deleting image from storage:', storageError);
