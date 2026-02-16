@@ -167,21 +167,28 @@ export default function AdminHome() {
           if (table === 'staff') {
             itemToDelete = staffs.find(s => s.id === id);
             if (itemToDelete?.photo_url) {
-              imagePath = itemToDelete.photo_url.split('/public/images/')[1];
+              const urlParts = itemToDelete.photo_url.split('/storage/v1/object/public/images/');
+              imagePath = urlParts.length > 1 ? urlParts[1] : itemToDelete.photo_url.split('/images/').pop();
             }
           } else if (table === 'posts') {
             itemToDelete = posts.find(p => p.id === id);
             if (itemToDelete?.thumbnail) {
-              imagePath = itemToDelete.thumbnail.split('/public/images/')[1];
+              const urlParts = itemToDelete.thumbnail.split('/storage/v1/object/public/images/');
+              imagePath = urlParts.length > 1 ? urlParts[1] : itemToDelete.thumbnail.split('/images/').pop();
             }
           }
 
           // 스토리지에서 파일 삭제
           if (imagePath) {
+            console.log('Attempting to delete image path:', imagePath);
             const { error: storageError } = await supabase.storage
               .from('images')
               .remove([imagePath]);
-            if (storageError) console.error('Error deleting image from storage:', storageError);
+
+            if (storageError) {
+              console.error('Error deleting image from storage:', storageError);
+              alert('이미지 파일 삭제에 실패했습니다 (권한 설정 확인 필요): ' + storageError.message);
+            }
           }
 
           // 2. DB 레코드 삭제
