@@ -219,7 +219,7 @@ export default function AdminHome() {
   }
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px 100px' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px 100px', width: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
       <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '8px', backgroundColor: '#f1f5f9', padding: '4px', borderRadius: '12px' }}>
           <button onClick={() => setActiveTab('team')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'team' ? '#fff' : 'transparent', color: activeTab === 'team' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'team' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>운영자 관리</button>
@@ -236,7 +236,7 @@ export default function AdminHome() {
             <button onClick={() => setStaffs([...staffs, { id: Date.now(), name: '', position: '', photo_url: '', highlights: [''], sort_order: staffs.length + 1 }])} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 운영자 추가</button>
           </div>
 
-          <div style={{ display: 'grid', gap: '20px', width: '100%' }}>
+          <div style={{ display: 'grid', gap: '20px' }}>
             {staffs.map((person) => (
               <div key={person.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '20px' }}>
@@ -307,7 +307,7 @@ export default function AdminHome() {
             <h2 style={{ fontSize: '1.25rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}><Briefcase /> 업무 목록</h2>
             <button onClick={() => setServices([...services, { id: Date.now(), name: '', description: [''], sort_order: services.length + 1 }])} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 업무 추가</button>
           </div>
-          <div style={{ display: 'grid', gap: '20px', width: '100%' }}>
+          <div style={{ display: 'grid', gap: '20px' }}>
             {services.map((service) => (
               <div key={service.id} style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' }}>
@@ -351,7 +351,7 @@ export default function AdminHome() {
                 <h2 style={{ fontSize: '1.25rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}><Info /> 정보 광장 게시글</h2>
                 <button onClick={() => setEditingPost({ title: '', category: 'accounting', content: '', summary: '', thumbnail: '' })} style={{ padding: '10px 20px', backgroundColor: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={18} /> 새 글 쓰기</button>
               </div>
-              <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden' }}>
+              <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden', width: '100%', boxSizing: 'border-box' }}>
                 {posts.map((post) => (
                   <div key={post.id} style={{ padding: '20px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
