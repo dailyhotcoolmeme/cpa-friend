@@ -167,27 +167,36 @@ export default function AdminHome() {
           if (table === 'staff') {
             itemToDelete = staffs.find(s => s.id === id);
             if (itemToDelete?.photo_url) {
-              const urlParts = itemToDelete.photo_url.split('/storage/v1/object/public/images/');
-              imagePath = urlParts.length > 1 ? urlParts[1] : itemToDelete.photo_url.split('/images/').pop();
+              const url = itemToDelete.photo_url;
+              // /images/ 뒤의 모든 내용을 가져옴
+              const match = url.match(/\/images\/(.+)$/);
+              imagePath = match ? match[1] : null;
             }
           } else if (table === 'posts') {
             itemToDelete = posts.find(p => p.id === id);
             if (itemToDelete?.thumbnail) {
-              const urlParts = itemToDelete.thumbnail.split('/storage/v1/object/public/images/');
-              imagePath = urlParts.length > 1 ? urlParts[1] : itemToDelete.thumbnail.split('/images/').pop();
+              const url = itemToDelete.thumbnail;
+              const match = url.match(/\/images\/(.+)$/);
+              imagePath = match ? match[1] : null;
             }
           }
 
           // 스토리지에서 파일 삭제
           if (imagePath) {
-            console.log('Attempting to delete image path:', imagePath);
+            // URL 인코딩된 문자열을 디코딩 (예: %20 -> 공백)
+            const decodedPath = decodeURIComponent(imagePath);
+            console.log('Original Path:', imagePath);
+            console.log('Decoded Path:', decodedPath);
+
             const { error: storageError } = await supabase.storage
               .from('images')
-              .remove([imagePath]);
+              .remove([decodedPath]);
 
             if (storageError) {
               console.error('Error deleting image from storage:', storageError);
-              alert('이미지 파일 삭제에 실패했습니다 (권한 설정 확인 필요): ' + storageError.message);
+              alert('이미지 파일 삭제 실패: ' + storageError.message);
+            } else {
+              console.log('Storage deletion successful');
             }
           }
 
