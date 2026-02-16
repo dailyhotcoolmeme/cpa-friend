@@ -156,24 +156,49 @@ export default function AdminHome() {
 
   const deleteItem = async (table, id) => {
     if (confirm('정말 삭제하시겠습니까?')) {
-      // Date.now()로 생성된 임시 ID는 매우 큰 숫자 (1.7e12 이상)
-      // DB에서 온 ID는 보통 작은 숫자이거나 UUID 문자열
-      const isTemporaryId = typeof id === 'number' && id > 1000000000000;
+      const isTemp = isTemporaryId(id);
 
-      if (!isTemporaryId) {
-        const { error } = await supabase.from(table).delete().eq('id', id);
-        if (error) {
-          console.error(`Error deleting from ${table}:`, error);
-          alert('서버에서 삭제하는 중 오류가 발생했습니다: ' + error.message);
-          return;
+      try {
+        if (!isTemp) {
+          // 1. 이미지 삭제 로직 추가
+          let itemToDelete = null;
+          let imagePath = null;
+
+          if (table === 'staff') {
+            itemToDelete = staffs.find(s => s.id === id);
+            if (itemToDelete?.photo_url) {
+              imagePath = itemToDelete.photo_url.split('/public/images/')[1];
+            }
+          } else if (table === 'posts') {
+            itemToDelete = posts.find(p => p.id === id);
+            if (itemToDelete?.thumbnail) {
+              imagePath = itemToDelete.thumbnail.split('/public/images/')[1];
+            }
+          }
+
+          // 스토리지에서 파일 삭제
+          if (imagePath) {
+            const { error: storageError } = await supabase.storage
+              .from('images')
+              .remove([imagePath]);
+            if (storageError) console.error('Error deleting image from storage:', storageError);
+          }
+
+          // 2. DB 레코드 삭제
+          const { error } = await supabase.from(table).delete().eq('id', id);
+          if (error) throw error;
         }
+
+        // 3. UI 업데이트
+        if (table === 'staff') setStaffs(staffs.filter(s => s.id !== id));
+        if (table === 'services') setServices(services.filter(s => s.id !== id));
+        if (table === 'posts') setPosts(posts.filter(p => p.id !== id));
+
+        alert('삭제되었습니다.');
+      } catch (err) {
+        console.error(`Error deleting from ${table}:`, err);
+        alert('삭제 중 오류가 발생했습니다: ' + err.message);
       }
-
-      if (table === 'staff') setStaffs(staffs.filter(s => s.id !== id));
-      if (table === 'services') setServices(services.filter(s => s.id !== id));
-      if (table === 'posts') setPosts(posts.filter(p => p.id !== id));
-
-      alert('삭제되었습니다.');
     }
   };
 
