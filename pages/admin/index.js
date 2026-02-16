@@ -183,25 +183,10 @@ export default function AdminHome() {
 
           // 스토리지에서 파일 삭제
           if (imagePath) {
-            // 쿼리 파라미터(?t=...) 제거, 디코딩 및 양쪽 공백 제거
             const cleanPath = decodeURIComponent(imagePath.split('?')[0]).trim();
-
-            // 디버깅용 알림창 1
-            alert('삭제 시도하는 이미지 경로: ' + cleanPath);
-
-            const { data, error: storageError } = await supabase.storage
+            await supabase.storage
               .from('images')
               .remove([cleanPath]);
-
-            if (storageError) {
-              console.error('Error deleting image from storage:', storageError);
-              alert('이미지 파일 삭제 실패: ' + storageError.message);
-            } else {
-              // 수파베이스 remove 응답에는 지워진 파일 데이터 배열이 들어있습니다.
-              const deletedCount = data ? data.length : 0;
-              alert('이미지 삭제 요청 결과! 지워진 파일 수: ' + deletedCount);
-              console.log('Storage deletion successful:', data);
-            }
           }
 
           // 2. DB 레코드 삭제
