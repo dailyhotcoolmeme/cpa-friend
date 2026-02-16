@@ -219,12 +219,12 @@ export default function AdminHome() {
   }
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px 100px', width: '100%', boxSizing: 'border-box', overflowX: 'hidden' }}>
-      <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '8px', backgroundColor: '#f1f5f9', padding: '4px', borderRadius: '12px' }}>
-          <button onClick={() => setActiveTab('team')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'team' ? '#fff' : 'transparent', color: activeTab === 'team' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'team' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>운영자 관리</button>
-          <button onClick={() => setActiveTab('services')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'services' ? '#fff' : 'transparent', color: activeTab === 'services' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'services' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>업무 관리</button>
-          <button onClick={() => setActiveTab('info')} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'info' ? '#fff' : 'transparent', color: activeTab === 'info' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'info' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>정보 광장 관리</button>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px 100px', width: '100%', boxSizing: 'border-box' }}>
+      <header style={{ marginBottom: '40px' }}>
+        <div style={{ display: 'flex', gap: '8px', backgroundColor: '#f1f5f9', padding: '4px', borderRadius: '12px', width: '100%', boxSizing: 'border-box' }}>
+          <button onClick={() => setActiveTab('team')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'team' ? '#fff' : 'transparent', color: activeTab === 'team' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'team' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>운영자 관리</button>
+          <button onClick={() => setActiveTab('services')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'services' ? '#fff' : 'transparent', color: activeTab === 'services' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'services' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>업무 관리</button>
+          <button onClick={() => setActiveTab('info')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', backgroundColor: activeTab === 'info' ? '#fff' : 'transparent', color: activeTab === 'info' ? '#1e40af' : '#64748b', fontWeight: '700', cursor: 'pointer', boxShadow: activeTab === 'info' ? '0 4px 6px rgba(0,0,0,0.05)' : 'none' }}>정보 광장 관리</button>
         </div>
       </header>
 
