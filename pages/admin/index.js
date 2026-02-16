@@ -25,13 +25,20 @@ export default function AdminHome() {
   const [services, setServices] = useState([]);
   const [posts, setPosts] = useState([]);
   const [editingPost, setEditingPost] = useState(null);
+  const isTemporaryId = (id) => typeof id === 'number' && id > 1000000000000;
 
   async function checkPassword() {
-    const { data } = await supabase.from('admin_config').select('value').eq('key', 'admin_password').single();
-    if (data && data.value === inputPw) {
-      setIsAuthorized(true);
-      loadAllData();
-    } else { alert('비밀번호가 틀렸습니다.'); }
+    try {
+      const { data, error } = await supabase.from('admin_config').select('value').eq('key', 'admin_password').single();
+      if (error) throw error;
+      if (data && data.value === inputPw) {
+        setIsAuthorized(true);
+        loadAllData();
+      } else { alert('비밀번호가 틀렸습니다.'); }
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('로그인 중 오류가 발생했습니다.');
+    }
   }
 
   async function loadAllData() {
@@ -86,10 +93,12 @@ export default function AdminHome() {
           highlights: person.highlights,
           sort_order: person.sort_order
         };
-        if (person.id > 1000000000000) {
-          await supabase.from('staff').insert(staffData);
+        if (isTemporaryId(person.id)) {
+          const { error } = await supabase.from('staff').insert(staffData);
+          if (error) throw error;
         } else {
-          await supabase.from('staff').update(staffData).eq('id', person.id);
+          const { error } = await supabase.from('staff').update(staffData).eq('id', person.id);
+          if (error) throw error;
         }
       }
       alert('운영자 정보가 저장되었습니다.');
@@ -105,10 +114,12 @@ export default function AdminHome() {
           description: service.description,
           sort_order: service.sort_order
         };
-        if (service.id > 1000000000000) {
-          await supabase.from('services').insert(serviceData);
+        if (isTemporaryId(service.id)) {
+          const { error } = await supabase.from('services').insert(serviceData);
+          if (error) throw error;
         } else {
-          await supabase.from('services').update(serviceData).eq('id', service.id);
+          const { error } = await supabase.from('services').update(serviceData).eq('id', service.id);
+          if (error) throw error;
         }
       }
       alert('업무 정보가 저장되었습니다.');
@@ -130,10 +141,12 @@ export default function AdminHome() {
         thumbnail: editingPost.thumbnail
       };
 
-      if (editingPost.id && typeof editingPost.id === 'number') {
-        await supabase.from('posts').update(postData).eq('id', editingPost.id);
+      if (editingPost.id && !isTemporaryId(editingPost.id)) {
+        const { error } = await supabase.from('posts').update(postData).eq('id', editingPost.id);
+        if (error) throw error;
       } else {
-        await supabase.from('posts').insert(postData);
+        const { error } = await supabase.from('posts').insert(postData);
+        if (error) throw error;
       }
       alert('글이 저장되었습니다.');
       setEditingPost(null);
@@ -143,12 +156,24 @@ export default function AdminHome() {
 
   const deleteItem = async (table, id) => {
     if (confirm('정말 삭제하시겠습니까?')) {
-      if (id < 1000000000000) {
-        await supabase.from(table).delete().eq('id', id);
+      // Date.now()로 생성된 임시 ID는 매우 큰 숫자 (1.7e12 이상)
+      // DB에서 온 ID는 보통 작은 숫자이거나 UUID 문자열
+      const isTemporaryId = typeof id === 'number' && id > 1000000000000;
+
+      if (!isTemporaryId) {
+        const { error } = await supabase.from(table).delete().eq('id', id);
+        if (error) {
+          console.error(`Error deleting from ${table}:`, error);
+          alert('서버에서 삭제하는 중 오류가 발생했습니다: ' + error.message);
+          return;
+        }
       }
+
       if (table === 'staff') setStaffs(staffs.filter(s => s.id !== id));
       if (table === 'services') setServices(services.filter(s => s.id !== id));
       if (table === 'posts') setPosts(posts.filter(p => p.id !== id));
+
+      alert('삭제되었습니다.');
     }
   };
 
